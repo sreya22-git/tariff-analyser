@@ -1,0 +1,177 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container-fluid py-2 final-page">
+
+  <div class="module-header text-center p-3 mb-4 shadow-sm bg-light border rounded">
+    <h2 class="m-0 fw-semibold">Procurement Data Ingestion</h2>
+    <p class="text-muted mb-0 mt-1">Upload a procurement workbook (Vendor Master, PO Master, HS Code Tariff Rates, Spend Invoice Detail) to run the tariff-impact analysis.</p>
+  </div>
+
+  <div class="row justify-content-center mb-4">
+    <div class="col-md-8 col-lg-7">
+      <div class="card p-4 shadow-sm border upload-card">
+        <h5 class="mb-3 text-secondary">Upload Procurement Workbook</h5>
+        <form id="uploadForm" enctype="multipart/form-data">
+          <input class="d-none" type="file" id="fileInput" name="file"
+                 accept=".csv, .xlsx, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" required>
+          <div class="input-group mb-4">
+            <span class="input-group-text">Choose file</span>
+            <input type="text" id="fileName" class="form-control" value="No file chosen" readonly>
+            <button class="btn btn-secondary" type="button" id="browseBtn">Browse</button>
+          </div>
+          <div id="uploadError" class="text-danger small mt-1 d-none">Please choose a file before uploading.</div>
+          <div class="text-center">
+            <button type="submit" class="btn btn-success px-4">Upload and Analyse</button>
+            <button type="button" class="btn btn-outline-secondary px-4 ms-2" id="useDemoBtn">Use Bundled Demo Data</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <hr class="my-4">
+
+  <div id="resultsCard" class="card shadow-sm mb-4 results-card d-none">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center"><h3 id="resultsTitle" class="m-0">Generated Results</h3><span id="resultsSpinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span></div>
+    </div>
+
+    <ul class="nav nav-tabs mt-4" id="modeling-tabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="schema-tab-btn" data-bs-toggle="tab" data-bs-target="#schema-tab" type="button" role="tab">Schema Overview</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="relationships-tab-btn" data-bs-toggle="tab" data-bs-target="#relationships-tab" type="button" role="tab">Relationships</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="er-tab-btn" data-bs-toggle="tab" data-bs-target="#er-tab" type="button" role="tab">ER Diagram</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="validation-tab-btn" data-bs-toggle="tab" data-bs-target="#validation-tab" type="button" role="tab">Analysis Checks</button>
+      </li>
+    </ul>
+
+    <div class="tab-content mt-3" id="modeling-tabs-content">
+      <div class="tab-pane fade show active" id="schema-tab" role="tabpanel">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="card h-100">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="m-0">Tables</h5>
+                <span class="badge text-bg-secondary" id="table-count">0</span>
+              </div>
+              <div class="card-body p-0">
+                <div class="list-group list-group-flush" id="tables-list" style="max-height: 380px; overflow-y: auto;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-8">
+            <div class="card h-100">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                  <h5 class="m-0" id="table-title">Select a table</h5>
+                  <small class="text-muted" id="table-subtitle">Columns and quick stats</small>
+                </div>
+                <div><span class="badge text-bg-primary" id="col-count">0 cols</span></div>
+              </div>
+              <div class="card-body">
+                <div class="table-responsive" style="max-height: 380px; overflow-y: auto;">
+                  <table class="table table-sm align-middle">
+                    <thead class="table-light">
+                      <tr><th style="width: 32%">Column</th><th style="width: 18%">Type</th><th style="width: 15%">Nullable</th><th>Description</th></tr>
+                    </thead>
+                    <tbody id="columns-table"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-pane fade" id="relationships-tab" role="tabpanel">
+        <div class="card">
+          <div class="card-header"><h5 class="m-0">Relationships</h5></div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover table-sm align-middle">
+                <thead class="table-light">
+                  <tr><th style="width: 18%">From Table</th><th style="width: 20%">From Column</th><th style="width: 18%">To Table</th><th style="width: 20%">To Column</th><th style="width: 14%">Cardinality</th></tr>
+                </thead>
+                <tbody id="relationships-table"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-pane fade" id="er-tab" role="tabpanel">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="m-0">Entity Relationship Diagram</h5>
+            <button class="btn btn-sm btn-outline-secondary" id="reset-layout-btn">Reset Layout</button>
+          </div>
+          <div class="card-body">
+            <div id="er-diagram" class="bg-white" style="height: 520px; border: 1px solid #dee2e6; border-radius: .5rem;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-pane fade" id="validation-tab" role="tabpanel">
+        <div class="card">
+          <div class="card-header"><h5 class="m-0">Cost Impact Analysis</h5></div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-bordered table-striped" style="table-layout: fixed;">
+                <thead class="table-light"><tr><th style="width: 30%">Check</th><th style="width: 70%">Description</th></tr></thead>
+                <tbody>
+                  <tr><td>Tariff Rate Increase Exposure</td><td>Flags invoices where the applicable duty rate rose vs. the prior rate, with the added $ cost exposure.</td></tr>
+                  <tr><td>High-Duty Category Concentration</td><td>Flags item categories responsible for a large share of total duty paid.</td></tr>
+                  <tr><td>Landed Cost Calculation Mismatch</td><td>Flags invoices where duty paid does not reconcile with Qty x Unit Cost x Duty Rate.</td></tr>
+                  <tr><td>PO Value Outliers</td><td>Flags purchase orders whose value is a statistical outlier vs. the rest of the PO book.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="card mt-4">
+          <div class="card-header"><h5 class="m-0">Supplier & Country Risk</h5></div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-bordered table-striped" style="table-layout: fixed;">
+                <thead class="table-light"><tr><th style="width: 30%">Check</th><th style="width: 70%">Description</th></tr></thead>
+                <tbody>
+                  <tr><td>Single-Source Category Risk</td><td>Flags item categories sourced from only one vendor above a spend threshold.</td></tr>
+                  <tr><td>Country Concentration Risk</td><td>Flags countries of origin representing a large share of total spend.</td></tr>
+                  <tr><td>Vendor / Country-of-Origin Mismatch</td><td>Flags POs where the country of origin differs from the vendor's registered country.</td></tr>
+                  <tr><td>Continued Sourcing Despite Tariff Increase</td><td>Flags sourcing lanes where material spend continues after a significant duty rate increase.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="card mt-4">
+          <div class="card-header"><h5 class="m-0">Duty Optimization & Compliance</h5></div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-bordered table-striped" style="table-layout: fixed;">
+                <thead class="table-light"><tr><th style="width: 30%">Check</th><th style="width: 70%">Description</th></tr></thead>
+                <tbody>
+                  <tr><td>FTA Underutilization</td><td>Flags FTA-eligible shipments where full duty was still paid instead of the preferential rate.</td></tr>
+                  <tr><td>HS Code Classification Inconsistency</td><td>Flags item categories mapped to more than one HS code.</td></tr>
+                  <tr><td>Duty Drawback Opportunity</td><td>Flags returned/cancelled POs where duty was already paid and may be recoverable.</td></tr>
+                  <tr><td>Missing Compliance Documentation</td><td>Flags POs missing country of origin or HS code required for customs entry.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/gojs/release/go.js"></script>
+<script src='{{ url_for("static", path="js/ingestion.js") }}'></script>
+{% endblock %}

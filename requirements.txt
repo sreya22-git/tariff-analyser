@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+jinja2
+python-multipart
+
+# Data processing (uploads/analysis)
+pandas
+numpy
+openpyxl
+python-dotenv
+httpx

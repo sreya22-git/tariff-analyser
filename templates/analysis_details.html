@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container-fluid py-4 fdi-page">
+  <div class="module-header text-center p-3 mb-4 shadow-sm bg-light border rounded">
+    <h3 class="text-dark m-0">Analysis Details</h3>
+  </div>
+
+  <ul class="nav nav-tabs mb-3" id="section-tabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" data-section="cost-impact" type="button">Cost Impact Analysis</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" data-section="supplier-risk" type="button">Supplier &amp; Country Risk</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" data-section="duty-optimization" type="button">Duty Optimization &amp; Compliance</button>
+    </li>
+  </ul>
+
+  <div class="row g-4 mt-0">
+    <div class="col-12">
+      <div class="card p-3 shadow-sm">
+        <div id="section-cost-impact" class="analysis-section">
+          <div id="summary-cards-cost-impact" class="mb-3"></div>
+          <div id="buckets-container-cost-impact"><div class="text-muted">Loading...</div></div>
+        </div>
+        <div id="section-supplier-risk" class="analysis-section" style="display:none;">
+          <div id="summary-cards-supplier-risk" class="mb-3"></div>
+          <div id="buckets-container-supplier-risk"><div class="text-muted">Loading...</div></div>
+        </div>
+        <div id="section-duty-optimization" class="analysis-section" style="display:none;">
+          <div id="summary-cards-duty-optimization" class="mb-3"></div>
+          <div id="buckets-container-duty-optimization"><div class="text-muted">Loading...</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', path='js/analysis-details.js') }}"></script>
+<script>document.addEventListener('DOMContentLoaded', () => window.AnalysisDetails.init());</script>
+{% endblock %}

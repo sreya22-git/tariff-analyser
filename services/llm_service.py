@@ -64,7 +64,9 @@ class LLMService:
                 return f"An unexpected error occurred: {e}"
 
     async def answer_question(self, question: str, context: str) -> str:
-        return await self._answer_llm(question, context)
+        if self.api_key and self.base_url and self.model != "stub-model":
+            return await self._answer_llm(question, context)
+        return self._answer_stub(question, context)
 
     async def _answer_llm(self, question: str, context: str) -> str:
         system = _load_prompt("SourcingAssistantPrompt.md")
@@ -91,6 +93,14 @@ class LLMService:
                 return f"Error calling LLM API: {e}"
             except Exception as e:
                 return f"An unexpected error occurred: {e}"
+
+    def _answer_stub(self, question: str, context: str) -> str:
+        """Deterministic fallback when no LLM is configured, so the AI Assistant degrades
+        gracefully instead of attempting a request with a missing/invalid api_key or base_url."""
+        note = "The AI Assistant isn't configured with an LLM API key (set OPENAI_API_KEY and OPENAI_BASE_URL), so it can't answer open-ended questions yet."
+        if not context or not context.strip():
+            return note
+        return f"{note} Based on the current findings:\n{self._summarize_stub(context)}"
 
     def _summarize_stub(self, context: str) -> str:
         """Deterministic, context-grounded summary parsed from the same bracketed-bucket

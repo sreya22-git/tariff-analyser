@@ -15,14 +15,14 @@ Already a pro? Just edit this README.md and make it your own. Want to make it ea
 
 ```
 cd existing_repo
-git remote add origin https://code.straive.com/Sreya.Addula/tariff-analysis.git
+git remote add origin https://github.com/sreya22-git/tariff-analyser.git
 git branch -M main
 git push -uf origin main
 ```
 
 ## Integrate with your tools
 
-- [ ] [Set up project integrations](https://code.straive.com/Sreya.Addula/tariff-analysis/-/settings/integrations)
+- [ ] [Set up project integrations](https://github.com/sreya22-git/tariff-analyser)
 
 ## Collaborate with your team
 

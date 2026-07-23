@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sourcing Desk — Tariff-aware sourcing decisions</title>
+<style>
+  :root{
+    --bg:#eef2f7; --card:#ffffff; --soft:#f5f8fc; --ocean:#eaf1f7;
+    --ink:#152232; --muted:#5c6c80; --faint:#8ea0b4; --line:#e3eaf2;
+    --brand:#0e7c86; --brand-2:#17a7a0; --brand-ink:#0a5a5f; --brand-soft:#e2f4f3;
+    --plum:#6d5bd0; --plum-soft:#efecfb;
+    --red:#d9564a; --red-bg:#fbecea; --amber:#cd8a2c; --amber-bg:#faf1e1; --green:#2e9d6e; --green-bg:#e7f6ef;
+    --mono:ui-monospace,"SFMono-Regular","Cascadia Code","JetBrains Mono",Consolas,monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --shadow:0 1px 2px rgba(20,40,70,.05),0 10px 26px -14px rgba(20,40,70,.18);
+  }
+  *{box-sizing:border-box} html,body{margin:0;height:100%}
+  body{background:
+    radial-gradient(circle at 10% 0%, rgba(23,167,160,.18), transparent 24%),
+    radial-gradient(circle at 88% 8%, rgba(109,91,208,.12), transparent 22%),
+    linear-gradient(180deg,#f8fbff 0%,#eef4fb 42%,#e9f0f7 100%);
+    color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.5;overflow-x:hidden}
+  body::before,body::after{content:"";position:fixed;pointer-events:none;z-index:0;border-radius:50%;filter:blur(40px);opacity:.55}
+  body::before{width:320px;height:320px;left:-90px;top:120px;background:rgba(23,167,160,.18)}
+  body::after{width:280px;height:280px;right:-70px;top:240px;background:rgba(109,91,208,.12)}
+  .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .muted{color:var(--muted)} .faint{color:var(--faint)}
+  button{font-family:var(--sans);cursor:pointer;transition:transform .18s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease, color .18s ease} h1,h2,h3,h4{margin:0}
+
+  /* top bar */
+  .topbar{background:rgba(255,255,255,.86);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.65);display:flex;align-items:center;
+    gap:14px;padding:14px 24px;position:sticky;top:0;z-index:30;box-shadow:0 14px 38px -28px rgba(18,36,64,.38)}
+  .logo{display:flex;align-items:center;gap:14px;min-width:0}
+  .logoimg{width:46px;height:46px;object-fit:contain;padding:8px;border-radius:14px;background:linear-gradient(180deg,#ffffff,#edf7f6);
+    border:1px solid rgba(14,124,134,.18);box-shadow:0 18px 32px -24px rgba(14,124,134,.45)}
+  .brandcopy{display:flex;flex-direction:column;min-width:0}
+  .brandeyebrow{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--brand);font-weight:800}
+  .logo b{font-weight:800;font-size:22px;letter-spacing:-.03em} .logo b i{color:var(--brand-2);font-style:normal}
+  .divider{width:1px;height:36px;background:linear-gradient(180deg,transparent,#d9e6f1,transparent)}
+  .product{font-size:13px;font-weight:700;color:var(--muted);padding:10px 14px;border-radius:999px;background:rgba(255,255,255,.68);border:1px solid rgba(14,124,134,.08)}
+  .persona{margin-left:auto;display:flex;align-items:center;gap:9px;background:var(--soft);
+    border:1px solid rgba(14,124,134,.12);border-radius:999px;padding:7px 8px 7px 14px;font-size:12.5px;box-shadow:0 16px 30px -26px rgba(19,49,88,.35)}
+  .persona .av{width:24px;height:24px;border-radius:50%;background:var(--plum-soft);color:var(--plum);
+    display:grid;place-items:center;font-weight:700;font-size:11px}
+  .persona b{font-weight:600}
+  .tourbtn{border:1px solid var(--brand);background:var(--brand-soft);color:var(--brand-ink);
+    border-radius:999px;padding:9px 15px;font-weight:700;font-size:13px;margin-left:12px;box-shadow:0 20px 36px -28px rgba(14,124,134,.5)}
+  .tourbtn:hover{background:#d3eeec}
+
+  .app{display:grid;grid-template-columns:1fr 360px;gap:16px;max-width:1360px;margin:0 auto;padding:18px 20px 60px;position:relative;z-index:1}
+  .topbar{position:sticky}
+  .card{background:rgba(255,255,255,.94);border:1px solid rgba(226,234,242,.9);border-radius:20px;box-shadow:0 18px 44px -28px rgba(20,40,70,.22);overflow:hidden}
+
+  /* intake */
+  .intake{grid-column:1/3;display:grid;grid-template-columns:minmax(320px,1.02fr) minmax(360px,.98fr);gap:18px;align-items:start;
+    padding:18px;background:linear-gradient(135deg,#f7fbfe 0%,#eef8f7 58%,#e8f0f6 100%)}
+  .intakecopy{padding:6px 4px 2px;display:flex;flex-direction:column;gap:16px}
+  .intakek{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;background:rgba(14,124,134,.1);
+    color:var(--brand-ink);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+  .intakecopy h2{font-size:30px;letter-spacing:-.03em;margin:0;max-width:640px}
+  .intakecopy p{margin:0;color:var(--muted);max-width:600px;font-size:14.5px}
+  .intakeactions{display:flex;gap:10px;flex-wrap:wrap}
+  .ibtn{border:1px solid rgba(14,124,134,.16);background:rgba(255,255,255,.84);border-radius:999px;padding:11px 16px;
+    font-size:12.5px;font-weight:700;color:var(--brand-ink);box-shadow:0 18px 32px -28px rgba(20,40,70,.25)}
+  .ibtn:hover{transform:translateY(-1px);border-color:rgba(14,124,134,.3)}
+  .ibtn.prim{background:linear-gradient(135deg,var(--brand-2),var(--brand));border-color:transparent;color:#fff;
+    box-shadow:0 22px 34px -26px rgba(14,124,134,.54)}
+  .featuregrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-width:640px}
+  .featurecard{display:flex;flex-direction:column;align-items:flex-start;gap:6px;border:1px solid rgba(14,124,134,.12);
+    background:rgba(255,255,255,.8);border-radius:18px;padding:16px 16px 15px;text-align:left;color:var(--ink);
+    box-shadow:0 18px 30px -26px rgba(20,40,70,.24)}
+  .featurecard:hover{transform:translateY(-2px);border-color:rgba(14,124,134,.26);box-shadow:0 24px 38px -28px rgba(14,124,134,.3)}
+  .featurecard em{font-style:normal;font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--brand)}
+  .featurecard strong{font-size:15px;letter-spacing:-.01em}
+  .featurecard small{font-size:12.5px;color:var(--muted);line-height:1.45}
+  .intakenote{display:flex;align-items:flex-start;gap:10px;max-width:640px;padding:14px 15px;border-radius:16px;
+    background:rgba(255,255,255,.72);border:1px solid rgba(14,124,134,.12);box-shadow:0 18px 32px -28px rgba(20,40,70,.2)}
+  .intakenote b{font-size:12px;color:var(--brand-ink);white-space:nowrap}
+  .intakenote span{font-size:12.5px;color:var(--muted)}
+  .uploadpanel{display:flex;flex-direction:column;gap:12px;min-width:0;padding:4px 2px 2px;border-radius:18px;transition:box-shadow .18s ease, background .18s ease}
+  .uploadpanel.dragover{background:rgba(255,255,255,.42);box-shadow:0 0 0 4px rgba(14,124,134,.08)}
+  .sheetinput{display:none}
+  .uploadpanelhead{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:end;padding:0 2px}
+  .uploadpaneltitle{display:flex;flex-direction:column;gap:4px}
+  .uploadpaneltitle strong{font-size:18px;letter-spacing:-.02em}
+  .uploadpaneltitle span{font-size:12.5px;color:var(--muted)}
+  .uploadeyebrow{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--brand)}
+  .uploaddetails{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  .uploaddetails b{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:999px;font-size:11.5px;
+    background:rgba(255,255,255,.9);border:1px solid rgba(14,124,134,.12);color:var(--brand-ink)}
+  .uploadstatus{display:flex;align-items:center;gap:9px;padding:12px 14px;border-radius:13px;border:1px solid var(--line);
+    background:rgba(255,255,255,.88);font-size:12.5px;color:var(--muted)}
+  .uploadstatus::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--faint);flex:0 0 auto}
+  .uploadstatus.ok{background:#f3fbf7;border-color:#c9ecd7;color:#246947}
+  .uploadstatus.ok::before{background:var(--green)}
+  .uploadstatus.warn{background:#fff7ec;border-color:#f0d4a1;color:#9b6415}
+  .uploadstatus.warn::before{background:var(--amber)}
+  .uploadstatus.info{background:rgba(255,255,255,.88);border-color:rgba(14,124,134,.12);color:var(--muted)}
+  .uploadstatus.info::before{background:var(--brand-2)}
+  .uploadstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:10px}
+  .uploadstat{background:rgba(255,255,255,.88);border:1px solid var(--line);border-radius:14px;padding:11px 12px;min-height:82px}
+  .uploadstat .lbl{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .uploadstat .num{margin-top:7px;font-family:var(--mono);font-size:18px;font-weight:700;line-height:1.25}
+  .uploadstat.file .num{font-size:12px;word-break:break-word}
+  .uploadmsg{background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:13px;padding:12px 13px;font-size:12.5px;color:var(--muted)}
+  .uploadsignals,.uploadasks{display:flex;gap:8px;flex-wrap:wrap}
+  .uploadpill{display:inline-flex;align-items:center;gap:6px;padding:8px 11px;border-radius:999px;background:rgba(255,255,255,.92);
+    border:1px solid rgba(14,124,134,.12);font-size:11.5px;color:var(--brand-ink);font-weight:700}
+  .uploadpill b{font-weight:800}
+  .uploadask{border:1px solid rgba(14,124,134,.14);background:rgba(255,255,255,.88);border-radius:999px;padding:8px 12px;
+    font-size:12px;font-weight:700;color:var(--brand-ink)}
+  .uploadask:hover{background:var(--brand-soft);border-color:var(--brand)}
+  .uploadpreview{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;transition:box-shadow .18s ease, border-color .18s ease}
+  .uploadpreview.focused{border-color:rgba(14,124,134,.3);box-shadow:0 0 0 4px rgba(14,124,134,.08)}
+  .previewhead{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.9)}
+  .previewhead strong{font-size:13px}
+  .previewwrap{overflow:auto;max-height:292px;background:#fff}
+  .previewwrap table{width:100%;border-collapse:collapse;font-size:12px}
+  .previewwrap th,.previewwrap td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+  .previewwrap th{position:sticky;top:0;background:var(--soft);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);z-index:1}
+  .previewempty{padding:18px 14px;color:var(--muted);font-size:12.5px}
+
+  /* kpi ribbon */
+  .ribbon{grid-column:1/3;display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:14px 16px;box-shadow:var(--shadow);
+    display:flex;flex-direction:column;gap:3px}
+  .kpi .lbl{font-size:11.5px;color:var(--muted);font-weight:600}
+  .kpi .val{font-family:var(--mono);font-size:23px;font-weight:600;letter-spacing:-.02em}
+  .kpi .sub{font-size:11.5px;color:var(--faint)}
+  .kpi.red .val{color:var(--red)} .kpi.amber .val{color:var(--amber)} .kpi.plum .val{color:var(--plum)}
+
+  /* left column */
+  .stage,.side{position:relative}
+  .stage::before,.side::before{content:"";position:absolute;left:18px;right:18px;top:0;height:4px;border-radius:0 0 999px 999px;
+    background:linear-gradient(90deg,var(--brand),var(--brand-2),#7bc8c0)}
+  .stage{min-height:560px;background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(243,248,252,.98))}
+  .stagehead{display:flex;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid rgba(227,234,242,.9);
+    background:linear-gradient(135deg,rgba(255,255,255,.98),rgba(237,247,246,.94))}
+  .stagehead h3{font-size:16px;letter-spacing:-.02em}
+  .back{border:1px solid var(--line);background:var(--soft);border-radius:8px;padding:6px 11px;font-size:0;font-weight:600;color:transparent}
+  .back::after{content:"\2190 World map";font-size:12.5px;font-weight:600;color:var(--muted)}
+  .back:hover{border-color:var(--brand)}
+  .back:hover::after{color:var(--brand-ink)}
+  .legend{margin-left:auto;display:flex;gap:10px;font-size:11.5px;color:var(--muted);align-items:center;flex-wrap:wrap}
+  .legend span{display:inline-flex;align-items:center;gap:5px;padding:6px 9px;border-radius:999px;background:rgba(255,255,255,.76);
+    border:1px solid rgba(226,234,242,.92);box-shadow:0 14px 28px -24px rgba(20,40,70,.28)}
+  .legend i{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:-1px}
+
+  /* MAP */
+  .mapwrap{position:relative;overflow:hidden;padding:18px 16px 14px;background:
+    radial-gradient(circle at 22% 16%,rgba(255,255,255,.44),transparent 24%),
+    linear-gradient(180deg,#abd7ea 0%,#97c9de 44%,#7db4cf 100%);
+    border-radius:0 0 20px 20px}
+  .mapwrap::before,.mapwrap::after{content:"";position:absolute;pointer-events:none}
+  .mapwrap::before{inset:14px 16px; border:1px solid rgba(255,255,255,.46); border-radius:18px; box-shadow:inset 0 0 0 1px rgba(19,70,100,.06)}
+  .mapwrap::after{left:0;right:0;bottom:0;height:76px;background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.18))}
+  svg.map{width:100%;height:auto;display:block;position:relative;z-index:1}
+  .grat{stroke:rgba(255,255,255,.28);stroke-width:.75;fill:none}
+  .ocean{fill:url(#oceanGrad)}
+  .countryshape{stroke:rgba(255,255,255,.96);stroke-width:.82;stroke-linejoin:round;vector-effect:non-scaling-stroke;
+    filter:drop-shadow(0 8px 14px rgba(24,67,98,.08));transition:fill .18s ease, stroke .18s ease, filter .18s ease, opacity .18s ease}
+  .countryshape.idle{fill:#eaf3f7}
+  .countryshape.sourced{fill:#7fc6bf}
+  .countryshape.watch{fill:#d39a3b}
+  .countryshape.exposed{fill:#d9564a}
+  .countryshape.interactive{cursor:pointer}
+  .countryshape.interactive:hover{stroke:var(--brand-ink);stroke-width:1.2;filter:brightness(1.02) drop-shadow(0 10px 18px rgba(24,67,98,.16))}
+  .maptext{font-family:var(--sans);font-size:10.5px;fill:rgba(34,76,93,.7);font-weight:800;letter-spacing:.08em}
+  .arc{fill:none;stroke:rgba(14,124,134,.78);stroke-width:1.15;opacity:.2;stroke-dasharray:4 6;
+    animation:flow 1.4s linear infinite}
+  @keyframes flow{to{stroke-dashoffset:-22}}
+  .cnode{cursor:pointer;transition:.15s}
+  .cnode:hover{filter:brightness(.96)}
+  .cnode .halo{opacity:.0}
+  .cnode .core{filter:drop-shadow(0 10px 12px rgba(21,34,50,.16))}
+  .cnode.red .halo{opacity:.5;animation:pulse 1.8s ease-out infinite}
+  @keyframes pulse{0%{r:12;opacity:.5}100%{r:30;opacity:0}}
+  .clabel{font-size:10.5px;fill:var(--muted);font-family:var(--mono);pointer-events:none}
+  .callout,.labelline,.labelbox,.labelcountry,.labelmetric{pointer-events:none}
+  .labelline{fill:none;stroke-width:1;opacity:.56;stroke-linecap:round}
+  .labelbox{fill:rgba(255,255,255,.97);stroke:rgba(158,172,190,.74);stroke-width:1;filter:drop-shadow(0 8px 14px rgba(20,40,70,.12))}
+  .labelcountry{font-size:10.5px;fill:var(--ink);font-family:var(--sans);font-weight:700}
+  .labelmetric{font-size:10px;font-family:var(--mono);font-weight:700}
+  .plant{fill:var(--plum)}
+  .maphint{position:relative;z-index:1;display:flex;justify-content:center;margin-top:8px;color:var(--brand-ink);font-size:12px}
+  .maphint span{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;background:rgba(255,255,255,.82);
+    border:1px solid rgba(14,124,134,.12);box-shadow:0 18px 32px -28px rgba(20,40,70,.28)}
+
+  /* COUNTRY VIEW */
+  .cview{display:none;padding:16px 18px}
+  .cview.on{display:block}
+  .chead{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+  .flag{width:34px;height:24px;border-radius:5px;background:var(--soft);border:1px solid var(--line);
+    display:grid;place-items:center;font-size:12px;font-weight:700;color:var(--muted);font-family:var(--mono)}
+  .chead h2{font-size:19px} .chead .csub{font-size:12.5px;color:var(--muted)}
+  .cstats{display:flex;gap:20px;margin:12px 0 14px;flex-wrap:wrap}
+  .cstat .cn{font-family:var(--mono);font-size:18px;font-weight:600}
+  .cstat .cl{font-size:11.5px;color:var(--muted)}
+  .cstat.red .cn{color:var(--red)}
+  .partlist{border-top:1px solid var(--line)}
+  .part{border-bottom:1px solid var(--line)}
+  .parthead{display:flex;align-items:center;gap:12px;padding:12px 2px;cursor:pointer}
+  .parthead:hover{background:var(--soft)}
+  .parthead .chev{color:var(--faint);font-size:11px;transition:.2s}
+  .part.open .chev{transform:rotate(90deg)}
+  .parthead .pnm{font-weight:600;min-width:180px;font-size:13.5px}
+  .parthead .pm{flex:1;display:flex;gap:14px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+  .parthead .pm b{color:var(--ink);font-family:var(--mono);font-weight:600}
+  .band{font-family:var(--mono);font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px}
+  .band.Red{background:var(--red-bg);color:var(--red)} .band.Amber{background:var(--amber-bg);color:var(--amber)} .band.Green{background:var(--green-bg);color:var(--green)}
+  .decision{display:none;padding:4px 2px 18px}
+  .part.open .decision{display:block}
+  .dhelp{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:14px}
+  .dhelp .dh{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);font-weight:700;margin-bottom:10px}
+  .alt{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;padding:9px 10px;border-radius:9px;margin-bottom:7px;
+    background:var(--card);border:1px solid var(--line)}
+  .alt.best{border-color:var(--green);background:var(--green-bg)}
+  .alt .ac{font-weight:600;font-size:13px} .alt .ac .rec{font-size:10px;font-weight:700;color:var(--green);margin-left:7px}
+  .alt .am{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:right}
+  .alt .save{font-family:var(--mono);font-size:13px;font-weight:600;text-align:right}
+  .save.up{color:var(--green)} .save.down{color:var(--red)}
+  .actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+  .abtn{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:8px 12px;font-size:12.5px;font-weight:600;color:var(--ink)}
+  .abtn:hover{border-color:var(--brand);color:var(--brand-ink)}
+  .abtn.prim{background:linear-gradient(180deg,var(--brand-2),var(--brand));border:none;color:#fff}
+  .logged{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--green);
+    background:var(--green-bg);border:1px solid #c5ecda;border-radius:8px;padding:6px 11px;margin-top:12px}
+
+  /* right column */
+  .side{display:flex;flex-direction:column;min-height:560px;background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(243,248,252,.98))}
+  .tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:16px 16px 15px;border-bottom:1px solid rgba(227,234,242,.88);
+    background:linear-gradient(135deg,rgba(255,255,255,.98),rgba(236,247,246,.92))}
+  .tab{display:flex;align-items:center;gap:12px;text-align:left;border:1px solid rgba(226,234,242,.92);background:rgba(255,255,255,.82);
+    border-radius:16px;padding:11px 12px;min-height:64px;font-weight:600;color:var(--muted);box-shadow:0 18px 30px -28px rgba(20,40,70,.32)}
+  .tab:hover{transform:translateY(-1px);border-color:rgba(14,124,134,.28)}
+  .tab.on{background:linear-gradient(135deg,#0d7f87,#0f6670);border-color:transparent;color:#fff;box-shadow:0 24px 36px -28px rgba(14,124,134,.62)}
+  .tablogo{width:34px;height:34px;object-fit:contain;padding:6px;border-radius:11px;background:linear-gradient(180deg,#ffffff,#edf7f6);
+    border:1px solid rgba(14,124,134,.18);box-shadow:0 16px 28px -24px rgba(14,124,134,.38);flex:0 0 auto}
+  .tabcopy{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .tabtitle{font-size:13px;font-weight:700;letter-spacing:-.01em;color:var(--ink)}
+  .tabsub{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tab.on .tabtitle,.tab.on .tabsub{color:#fff}
+  .tabbody{flex:1;display:flex;flex-direction:column;min-height:0;background:linear-gradient(180deg,rgba(255,255,255,.56),rgba(243,248,252,.9))}
+
+  /* insights */
+  .insights{padding:16px;overflow:auto}
+  .insight{display:flex;gap:10px;padding:12px 14px;margin-bottom:10px;border:1px solid rgba(226,234,242,.96);
+    border-radius:14px;background:rgba(255,255,255,.82);box-shadow:0 18px 32px -28px rgba(20,40,70,.26);font-size:13px}
+  .insight:first-child{border-top:1px solid rgba(226,234,242,.96)}
+  .insight .in{flex:0 0 20px;height:20px;border-radius:50%;background:var(--brand-soft);color:var(--brand);
+    display:grid;place-items:center;font-size:11px;font-family:var(--mono);font-weight:700}
+
+  /* assistant */
+  .asst{display:none;flex-direction:column;flex:1;min-height:0}
+  .asst.on{display:flex}
+  .chat{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:12px;background:
+    radial-gradient(circle at top right, rgba(23,167,160,.08), transparent 24%),
+    linear-gradient(180deg,rgba(255,255,255,.82),rgba(241,246,251,.68))}
+  .bubble{max-width:92%;padding:11px 13px;border-radius:13px;font-size:13px;line-height:1.5}
+  .bubble.a{background:rgba(255,255,255,.9);border:1px solid rgba(226,234,242,.95);border-top-left-radius:4px;align-self:flex-start;
+    box-shadow:0 18px 28px -26px rgba(20,40,70,.28)}
+  .bubble.u{background:linear-gradient(135deg,var(--brand-2),var(--brand));color:#fff;border-top-right-radius:4px;align-self:flex-end;
+    box-shadow:0 20px 30px -24px rgba(14,124,134,.48)}
+  .bubble ul{margin:8px 0 0;padding-left:18px} .bubble li{margin:3px 0}
+  .bubble b{font-weight:700}
+  .chips{display:flex;gap:7px;flex-wrap:wrap;padding:0 16px 10px}
+  .chip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 12px;font-size:12px;color:var(--brand-ink);font-weight:600}
+  .chip:hover{background:var(--brand-soft);border-color:var(--brand)}
+  .voicebar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:0 16px 10px}
+  .voicebar .vbtn{border:1px solid var(--line);background:var(--soft);border-radius:999px;padding:7px 12px;font-size:12px;
+    color:var(--brand-ink);font-weight:600}
+  .voicebar .vbtn.active{background:var(--brand-soft);border-color:var(--brand)}
+  .voiceStatus{padding:0 16px 14px;font-size:12px;color:var(--muted)}
+  .composer{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line);flex-wrap:wrap}
+  .composer input{flex:1 1 180px;border:1px solid var(--line);border-radius:10px;padding:10px 13px;font-size:13px;font-family:var(--sans)}
+  .composer input:focus{outline:2px solid var(--brand-soft);border-color:var(--brand)}
+  .composer button{border:none;background:var(--brand);color:#fff;border-radius:10px;padding:0 15px;font-weight:600;height:40px}
+  .composer button.ghost{border:1px solid var(--line);background:var(--soft);color:var(--brand-ink)}
+  .composer button.ghost.active{background:var(--brand-soft);border-color:var(--brand)}
+
+  .scenbar{display:none;align-items:center;gap:10px;background:var(--amber-bg);border:1px solid #ecd7ab;
+    border-radius:10px;padding:9px 13px;margin:0 0 14px;font-size:12.5px;color:#8a5a10;font-weight:600}
+  .scenbar.on{display:flex}
+  .scenbar button{margin-left:auto;border:1px solid #e0c088;background:#fff;border-radius:7px;padding:5px 10px;font-size:12px;font-weight:600;color:#8a5a10}
+
+  /* tour */
+  .t-back{position:fixed;inset:0;background:rgba(10,20,32,.55);z-index:900;display:none}
+  .t-hi{position:relative;z-index:950;box-shadow:0 0 0 3px var(--brand),0 0 0 9px rgba(14,124,134,.25);border-radius:14px}
+  .t-card{position:fixed;z-index:960;width:320px;background:#fff;border:1px solid var(--brand);border-radius:14px;
+    padding:16px 18px;box-shadow:0 30px 70px -24px rgba(10,20,32,.5);display:none}
+  .t-card .st{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--brand);font-weight:700}
+  .t-card h4{margin:7px 0 6px;font-size:15px}
+  .t-card p{margin:0;color:var(--muted);font-size:13px}
+  .t-nav{display:flex;justify-content:space-between;align-items:center;margin-top:14px}
+  .t-dots{display:flex;gap:5px} .t-dots i{width:6px;height:6px;border-radius:50%;background:var(--line)} .t-dots i.on{background:var(--brand)}
+  .t-act{display:flex;gap:8px}
+  .t-act .lk{background:none;border:none;color:var(--muted);font-size:12.5px} .t-act .lk:hover{color:var(--ink)}
+  .t-act .nx{border:none;background:var(--brand);color:#fff;border-radius:8px;padding:8px 14px;font-weight:600;font-size:13px}
+  .t-act .bk{border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 12px;font-weight:600;font-size:13px}
+
+  @media(max-width:980px){.app{grid-template-columns:1fr}.intake{grid-column:1;grid-template-columns:1fr}.ribbon{grid-column:1;grid-template-columns:repeat(2,1fr)}
+    .topbar{flex-wrap:wrap;padding:14px 18px}.persona{margin-left:0}.tourbtn{margin-left:0}}
+  @media(max-width:720px){.uploadstats{grid-template-columns:repeat(2,1fr)}.previewhead{flex-direction:column;align-items:flex-start}
+    .composer button{flex:1 1 135px}.tabs{grid-template-columns:1fr}.stagehead,.tabs{padding-left:14px;padding-right:14px}
+    .legend{margin-left:0}.featuregrid{grid-template-columns:1fr}.intakeactions{flex-direction:column;align-items:stretch}.uploadpanelhead{grid-template-columns:1fr}}
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">
+    <img class="logoimg" src="../assets/straive-logo.png" alt="Straive logo">
+    <div class="brandcopy">
+      <span class="brandeyebrow">Straive Procurement Command Center</span>
+      <b>Sourcing<i>Desk</i></b>
+    </div>
+  </div>
+  <span class="divider"></span>
+  <span class="product">Tariff-aware sourcing decisions</span>
+  <div class="persona"><span class="av">B</span><span>Buyer workspace · <b>Passives &amp; Displays</b></span></div>
+  <button class="tourbtn" id="tourBtn">Guided tour</button>
+</div>
+
+<div class="app">
+  <section class="card intake" id="intake">
+    <div class="intakecopy">
+      <span class="intakek">Excel auto-clean intake</span>
+      <h2>Upload any Excel file and clean it the moment it lands.</h2>
+      <p>Drop a BOM, supplier tracker, or any worksheet here. The demo instantly normalizes headers, trims values, removes blank rows, drops duplicate rows, and refreshes a clean preview without an extra click.</p>
+      <div class="intakeactions">
+        <button class="ibtn prim" id="pickFileBtn" type="button">Upload workbook</button>
+        <button class="ibtn" id="loadSampleBtn" type="button">Load sample</button>
+        <button class="ibtn" id="focusPreviewBtn" type="button">View cleaned preview</button>
+      </div>
+      <div class="featuregrid">
+        <button class="featurecard" data-intake-action="pick" type="button">
+          <em>Supported formats</em>
+          <strong>CSV, XLS, XLSX</strong>
+          <small>Open the picker and drop in any workbook or raw extract.</small>
+        </button>
+        <button class="featurecard" data-intake-action="sample" type="button">
+          <em>Auto-clean on upload</em>
+          <strong>Normalize and dedupe</strong>
+          <small>Headers are cleaned, blank rows removed, and duplicate rows dropped instantly.</small>
+        </button>
+        <button class="featurecard" data-intake-action="preview" type="button">
+          <em>Instant preview</em>
+          <strong>Review cleaned rows</strong>
+          <small>Jump straight to the cleaned table and sanity-check the first records.</small>
+        </button>
+        <button class="featurecard" data-intake-action="download" type="button">
+          <em>Download cleaned CSV</em>
+          <strong>Export ready output</strong>
+          <small>Save the normalized result for downstream analysis or procurement ops.</small>
+        </button>
+      </div>
+      <div class="intakenote">
+        <b>Expert add-on:</b>
+        <span>The copilot can summarize the uploaded sheet, highlight supplier concentration, and speak answers back.</span>
+      </div>
+    </div>
+    <div class="uploadpanel" id="uploadBox">
+      <input id="sheetUpload" class="sheetinput" type="file" accept=".csv,.xlsx,.xls">
+      <div class="uploadpanelhead">
+        <div class="uploadpaneltitle">
+          <span class="uploadeyebrow">Live intake panel</span>
+          <strong>Clean preview updates the moment a file lands.</strong>
+          <span>Use Upload workbook or drop a CSV / Excel file anywhere in this panel.</span>
+        </div>
+        <div class="uploaddetails">
+          <b>CSV, XLS, XLSX</b>
+          <b>Auto-clean on upload</b>
+          <b>Instant preview</b>
+        </div>
+      </div>
+      <div class="uploadstatus info" id="uploadStatus">Sample workbook loaded. Use Upload workbook or drop a file into this panel.</div>
+      <div id="uploadMeta"></div>
+      <div class="uploadpreview">
+        <div class="previewhead">
+          <strong>Cleaned sheet preview</strong>
+          <button class="abtn" id="downloadCleaned" type="button">Download cleaned CSV</button>
+        </div>
+        <div class="previewwrap">
+          <table id="uploadPreviewTable"></table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- KPI ribbon -->
+  <div class="ribbon" id="ribbon"></div>
+
+  <!-- LEFT: map / country stage -->
+  <div class="card stage" id="stage">
+    <div class="stagehead">
+      <button class="back" id="backBtn" style="display:none">← Map</button>
+      <h3 id="stageTitle">Global sourcing map</h3>
+      <div class="legend"><span><i style="background:#d9564a"></i>high exposure</span>
+        <span><i style="background:#cd8a2c"></i>watch</span>
+        <span><i style="background:#93a0b0"></i>clear</span>
+        <span><i style="background:#6d5bd0"></i>your plant</span></div>
+    </div>
+    <!-- map -->
+    <div class="mapwrap" id="mapView">
+      <svg class="map" id="map" viewBox="0 0 680 360" role="img" aria-label="Global sourcing world map"></svg>
+      <div class="maphint"><span>Tap a country to see what's exposed and how to fix it.</span></div>
+    </div>
+    <!-- country drill-in -->
+    <div class="cview" id="cview"></div>
+  </div>
+
+  <!-- RIGHT: assistant + insights -->
+  <div class="card side" id="side">
+    <div class="tabs">
+      <button class="tab on" data-tab="asst" id="tabAsst">
+        <img class="tablogo" src="../assets/straive-logo.png" alt="" aria-hidden="true">
+        <span class="tabcopy"><span class="tabtitle">AI assistant</span><span class="tabsub">Straive voice copilot</span></span>
+      </button>
+      <button class="tab" data-tab="ins" id="tabIns">
+        <img class="tablogo" src="../assets/straive-logo.png" alt="" aria-hidden="true">
+        <span class="tabcopy"><span class="tabtitle">Insights</span><span class="tabsub">Risk pulse and actions</span></span>
+      </button>
+    </div>
+    <div class="tabbody">
+      <div class="asst on" id="asstPane">
+        <div class="chat" id="chat"></div>
+        <div class="chips" id="chips"></div>
+        <div class="voicebar">
+          <button class="vbtn" id="voiceBtn" type="button">Voice input</button>
+          <button class="vbtn" id="voiceReplyBtn" type="button">Voice reply off</button>
+        </div>
+        <div class="voiceStatus" id="voiceStatus">Voice ready if supported by this browser. Spoken questions get spoken answers back.</div>
+        <div class="composer">
+          <input id="ask" placeholder="Ask about risk, uploaded sheets, or sourcing actions..." autocomplete="off">
+          <button class="ghost" id="voiceAskBtn" type="button">Speak</button>
+          <button class="ghost" id="voiceReplyComposerBtn" type="button">Voice off</button>
+          <button id="send" type="button">Ask</button>
+        </div>
+      </div>
+      <div class="insights" id="insPane" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<!-- tour -->
+<div class="t-back" id="tBack"></div>
+<div class="t-card" id="tCard">
+  <div class="st" id="tStep"></div><h4 id="tTitle"></h4><p id="tBody"></p>
+  <div class="t-nav"><div class="t-dots" id="tDots"></div>
+    <div class="t-act"><button class="lk" id="tSkip">Skip</button>
+      <button class="bk" id="tBack2">Back</button><button class="nx" id="tNext">Next</button></div></div>
+</div>
+
+<script src="../assets/xlsx.full.min.js"></script>
+<script src="./vendor/d3.min.js"></script>
+<script src="./vendor/world-geojson.js"></script>
+<script>
+const DATA = {"company": "Voltaic Systems (synthetic)", "generated": "2026-07-22", "totals": {"total_spend": 608397096.11, "total_impact": 6758355.860000001, "at_risk_pct": 8.8, "red_count": 9, "ss_exposed": 10, "n_parts": 150, "cost_cap": 150000}, "crit_w": {"High": 20, "Medium": 11, "Low": 4}, "data_quality": {"raw": 157, "clean": 150, "issues": [{"issue": "Missing part description", "rows": 3, "action": "Imputed"}, {"issue": "Missing unit cost", "rows": 5, "action": "Imputed"}, {"issue": "Missing country of origin", "rows": 4, "action": "Enriched"}, {"issue": "Unmapped HS code", "rows": 6, "action": "Matched"}, {"issue": "Duplicate part rows", "rows": 7, "action": "Removed"}]}, "by_country": [{"country": "China", "impact": 6131185}, {"country": "Malaysia", "impact": 576836}, {"country": "India", "impact": 50335}, {"country": "Japan", "impact": 0}, {"country": "Mexico", "impact": 0}, {"country": "South Korea", "impact": 0}, {"country": "Taiwan", "impact": 0}, {"country": "Thailand", "impact": 0}, {"country": "USA", "impact": 0}, {"country": "Vietnam", "impact": 0}], "by_category": [{"category": "Display Modules", "impact": 4222101}, {"category": "Li-ion Cells & Batteries", "impact": 1484447}, {"category": "PCB & Laminates", "impact": 576836}, {"category": "Aluminium Enclosures", "impact": 306052}, {"category": "Capacitors", "impact": 76999}, {"category": "Connectors", "impact": 50335}, {"category": "Resistors & Passives", "impact": 41587}, {"category": "Insulated Wire & Cable", "impact": 0}, {"category": "Polymer Housings", "impact": 0}, {"category": "Semiconductors/ICs", "impact": 0}, {"category": "Steel Hardware", "impact": 0}], "countries": ["China", "Taiwan", "South Korea", "Japan", "Vietnam", "Malaysia", "Thailand", "Mexico", "Germany", "USA", "India", "Philippines"], "categories": ["Semiconductors/ICs", "PCB & Laminates", "Capacitors", "Connectors", "Resistors & Passives", "Display Modules", "Li-ion Cells & Batteries", "Inductors & Transformers", "Insulated Wire & Cable", "Aluminium Enclosures", "Steel Hardware", "Polymer Housings"], "alerts": [{"alert_id": "GTA0009", "published_date": "2026-07-04", "implementing_jurisdiction": "USA", "affected_partner_country": "Vietnam", "measure_type": "Section 301 tariff", "affected_hs_codes": "8544.42;8544.49;8536.69;8536.90", "tariff_rate_change_pct": 7.0, "status": "Under review", "headline": "USTR opens review of Vietnamese wire, cable and connector imports", "summary": "A proposed 7% duty on selected Vietnamese-origin interconnect products is under public-comment review; no duty is currently collected.", "source_url": "https://www.globaltradealert.org/intervention/60009"}, {"alert_id": "GTA0014", "published_date": "2026-06-26", "implementing_jurisdiction": "USA", "affected_partner_country": "China", "measure_type": "Section 301 tariff", "affected_hs_codes": "8533.21;8533.40", "tariff_rate_change_pct": 15.0, "status": "In force", "headline": "Chinese chip resistors and passives added to Section 301 list", "summary": "High-volume chip resistors and ferrite components from China now carry a 15% additional duty.", "source_url": "https://www.globaltradealert.org/intervention/60014"}, {"alert_id": "GTA0008", "published_date": "2026-06-08", "implementing_jurisdiction": "USA", "affected_partner_country": "Malaysia", "measure_type": "Anti-dumping duty", "affected_hs_codes": "8532.24;8532.21", "tariff_rate_change_pct": 8.0, "status": "In force", "headline": "Anti-dumping duty confirmed on tantalum capacitors from Malaysia", "summary": "Commerce finalises an 8% anti-dumping margin on tantalum capacitors of Malaysian origin.", "source_url": "https://www.globaltradealert.org/intervention/60008"}, {"alert_id": "GTA0028", "published_date": "2026-06-04", "implementing_jurisdiction": "USA", "affected_partner_country": "Malaysia", "measure_type": "Anti-dumping duty", "affected_hs_codes": "8534.00", "tariff_rate_change_pct": 4.8, "status": "In force", "headline": "Anti-dumping duty reported on pcb & laminates from Malaysia", "summary": "A 4.8% anti-dumping duty affecting pcb & laminates of Malaysia origin has been recorded (in force).", "source_url": "https://www.globaltradealert.org/intervention/60028"}, {"alert_id": "GTA0016", "published_date": "2026-06-02", "implementing_jurisdiction": "USA", "affected_partner_country": "Thailand", "measure_type": "Anti-dumping duty", "affected_hs_codes": "7616.99;7606.12", "tariff_rate_change_pct": 9.0, "status": "In force", "headline": "Anti-dumping duty on Thai aluminium extrusions confirmed", "summary": "A 9% anti-dumping margin applies to aluminium extrusions and heatsinks of Thai origin.", "source_url": "https://www.globaltradealert.org/intervention/60016"}, {"alert_id": "GTA0015", "published_date": "2026-05-31", "implementing_jurisdiction": "USA", "affected_partner_country": "Mexico", "measure_type": "Tariff removal", "affected_hs_codes": "3926.90", "tariff_rate_change_pct": -6.0, "status": "In force", "headline": "USMCA review removes duty on qualifying Mexican polymer housings", "summary": "Qualifying polymer housings of Mexican origin see a 6% duty removed following a rules-of-origin determination \u2014 a downside-risk relief.", "source_url": "https://www.globaltradealert.org/intervention/60015"}, {"alert_id": "GTA0022", "published_date": "2026-05-29", "implementing_jurisdiction": "USA", "affected_partner_country": "Germany", "measure_type": "Tariff-rate quota", "affected_hs_codes": "8504.31;8504.50", "tariff_rate_change_pct": 13.8, "status": "Announced", "headline": "Tariff-rate quota reported on inductors & transformers from Germany", "summary": "A 13.8% tariff-rate quota affecting inductors & transformers of Germany origin has been recorded (announced).", "source_url": "https://www.globaltradealert.org/intervention/60022"}, {"alert_id": "GTA0030", "published_date": "2026-05-28", "implementing_jurisdiction": "USA", "affected_partner_country": "Japan", "measure_type": "Tariff-rate quota", "affected_hs_codes": "8532.24;8532.21", "tariff_rate_change_pct": 4.5, "status": "Under review", "headline": "Tariff-rate quota reported on capacitors from Japan", "summary": "A 4.5% tariff-rate quota affecting capacitors of Japan origin has been recorded (under review).", "source_url": "https://www.globaltradealert.org/intervention/60030"}, {"alert_id": "GTA0007", "published_date": "2026-04-17", "implementing_jurisdiction": "China", "affected_partner_country": "China", "measure_type": "Export control", "affected_hs_codes": "8542.31;8542.32;8542.39", "tariff_rate_change_pct": 6.0, "status": "In force", "headline": "China tightens export licensing on gallium and germanium inputs", "summary": "New export-licensing requirements on gallium- and germanium-based inputs raise effective landed costs and lead-time risk for downstream IC buyers.", "source_url": "https://www.globaltradealert.org/intervention/60007"}, {"alert_id": "GTA0002", "published_date": "2026-04-12", "implementing_jurisdiction": "USA", "affected_partner_country": "China", "measure_type": "Section 301 tariff", "affected_hs_codes": "8534.00", "tariff_rate_change_pct": 25.0, "status": "In force", "headline": "Section 301 list expanded to printed circuit boards of Chinese origin", "summary": "A 25% additional duty now applies to bare and assembled printed circuit boards imported from China under the latest Section 301 action.", "source_url": "https://www.globaltradealert.org/intervention/60002"}, {"alert_id": "GTA0020", "published_date": "2026-03-27", "implementing_jurisdiction": "USA", "affected_partner_country": "India", "measure_type": "Anti-dumping duty", "affected_hs_codes": "8536.69;8536.90", "tariff_rate_change_pct": 6.7, "status": "In force", "headline": "Anti-dumping duty reported on connectors from India", "summary": "A 6.7% anti-dumping duty affecting connectors of India origin has been recorded (in force).", "source_url": "https://www.globaltradealert.org/intervention/60020"}, {"alert_id": "GTA0010", "published_date": "2026-03-21", "implementing_jurisdiction": "USA", "affected_partner_country": "China", "measure_type": "Section 232 tariff", "affected_hs_codes": "7326.90", "tariff_rate_change_pct": 8.0, "status": "Under review", "headline": "Proposed Section 232 expansion to steel fasteners and brackets", "summary": "A proposed 8% expansion of Section 232 steel measures to stamped hardware and fasteners is under review.", "source_url": "https://www.globaltradealert.org/intervention/60010"}, {"alert_id": "GTA0003", "published_date": "2026-03-01", "implementing_jurisdiction": "USA", "affected_partner_country": "China", "measure_type": "Anti-dumping duty", "affected_hs_codes": "8507.60", "tariff_rate_change_pct": 18.4, "status": "In force", "headline": "Anti-dumping order issued on lithium-ion cells from China", "summary": "Commerce imposes a weighted-average anti-dumping margin of 18.4% on lithium-ion cells and packs from named Chinese exporters following a final affirmative determination.", "source_url": "https://www.globaltradealert.org/intervention/60003"}, {"alert_id": "GTA0005", "published_date": "2026-02-27", "implementing_jurisdiction": "USA", "affected_partner_country": "China", "measure_type": "Section 232 tariff", "affected_hs_codes": "7616.99;7606.12", "tariff_rate_change_pct": 10.0, "status": "In force", "headline": "Section 232 aluminium duties extended to fabricated enclosures", "summary": "Fabricated aluminium enclosures and heatsinks of Chinese origin fall under the extended Section 232 aluminium measure at a 10% rate.", "source_url": "https://www.globaltradealert.org/intervention/60005"}, {"alert_id": "GTA0024", "published_date": "2026-02-10", "implementing_jurisdiction": "USA", "affected_partner_country": "Taiwan", "measure_type": "Section 301 tariff", "affected_hs_codes": "8542.31;8542.32;8542.39", "tariff_rate_change_pct": 8.0, "status": "In force", "headline": "Section 301 tariff reported on semiconductors/ics from Taiwan", "summary": "A 8.0% section 301 tariff affecting semiconductors/ics of Taiwan origin has been recorded (in force).", "source_url": "https://www.globaltradealert.org/intervention/60024"}, {"alert_id": "GTA0012", "published_date": "2026-01-30", "implementing_jurisdiction": "USA", "affected_partner_country": "China", "measure_type": "Section 301 tariff", "affected_hs_codes": "9013.80", "tariff_rate_change_pct": 20.0, "status": "In force", "headline": "Display modules of Chinese origin subject to Section 301 duty", "summary": "TFT-LCD and OLED display modules from China carry a 20% additional duty under Section 301.", "source_url": "https://www.globaltradealert.org/intervention/60012"}, {"alert_id": "GTA0019", "published_date": "2026-01-29", "implementing_jurisdiction": "USA", "affected_partner_country": "Vietnam", "measure_type": "Section 301 tariff", "affected_hs_codes": "8542.31;8542.32;8542.39", "tariff_rate_change_pct": 9.0, "status": "In force", "headline": "Section 301 tariff reported on semiconductors/ics from Vietnam", "summary": "A 9.0% section 301 tariff affecting semiconductors/ics of Vietnam origin has been recorded (in force).", "source_url": "https://www.globaltradealert.org/intervention/60019"}, {"alert_id": "GTA0001", "published_date": "2026-01-29", "implementing_jurisdiction": "USA", "affected_partner_country": "China", "measure_type": "Section 301 tariff", "affected_hs_codes": "8542.31;8542.32;8542.39", "tariff_rate_change_pct": 25.0, "status": "In force", "headline": "United States raises Section 301 duties on Chinese integrated circuits", "summary": "US Trade Representative confirms a 25% additional ad valorem duty on a range of Chinese-origin semiconductor devices, citing continued technology-transfer concerns.", "source_url": "https://www.globaltradealert.org/intervention/60001"}, {"alert_id": "GTA0006", "published_date": "2026-01-17", "implementing_jurisdiction": "USA", "affected_partner_country": "China", "measure_type": "Anti-dumping duty", "affected_hs_codes": "8536.69;8536.90", "tariff_rate_change_pct": 12.5, "status": "Announced", "headline": "Preliminary anti-dumping margin announced on Chinese electrical connectors", "summary": "A preliminary 12.5% margin has been announced on board-to-board and power connectors from China; the order is not yet in force pending final determination.", "source_url": "https://www.globaltradealert.org/intervention/60006"}, {"alert_id": "GTA0011", "published_date": "2026-01-05", "implementing_jurisdiction": "USA", "affected_partner_country": "South Korea", "measure_type": "Tariff-rate quota", "affected_hs_codes": "8504.31;8504.50", "tariff_rate_change_pct": 5.0, "status": "In force", "headline": "Tariff-rate quota applied to Korean magnetics above threshold", "summary": "Imports of Korean-origin transformers and inductors above the annual quota threshold attract a 5% over-quota rate.", "source_url": "https://www.globaltradealert.org/intervention/60011"}, {"alert_id": "GTA0017", "published_date": "2025-12-26", "implementing_jurisdiction": "USA", "affected_partner_country": "China", "measure_type": "Section 301 tariff", "affected_hs_codes": "8504.31;8504.50", "tariff_rate_change_pct": 10.0, "status": "Expired", "headline": "Earlier Section 301 duty on Chinese magnetics allowed to lapse", "summary": "A prior 10% duty on Chinese-origin inductors expired at the end of the exclusion window and is no longer collected.", "source_url": "https://www.globaltradealert.org/intervention/60017"}, {"alert_id": "GTA0018", "published_date": "2025-12-24", "implementing_jurisdiction": "USA", "affected_partner_country": "Japan", "measure_type": "Tariff-rate quota", "affected_hs_codes": "8542.31;8542.32;8542.39", "tariff_rate_change_pct": 3.0, "status": "Announced", "headline": "Proposed quota on advanced Japanese IC imports", "summary": "A proposed 3% over-quota rate on advanced Japanese ICs has been announced for consultation.", "source_url": "https://www.globaltradealert.org/intervention/60018"}, {"alert_id": "GTA0021", "published_date": "2025-12-22", "implementing_jurisdiction": "USA", "affected_partner_country": "Philippines", "measure_type": "Anti-dumping duty", "affected_hs_codes": "8533.21;8533.40", "tariff_rate_change_pct": 13.0, "status": "Under review", "headline": "Anti-dumping duty reported on resistors & passives from Philippines", "summary": "A 13.0% anti-dumping duty affecting resistors & passives of Philippines origin has been recorded (under review).", "source_url": "https://www.globaltradealert.org/intervention/60021"}, {"alert_id": "GTA0025", "published_date": "2025-12-19", "implementing_jurisdiction": "USA", "affected_partner_country": "Thailand", "measure_type": "Anti-dumping duty", "affected_hs_codes": "8544.42;8544.49", "tariff_rate_change_pct": 10.1, "status": "In force", "headline": "Anti-dumping duty reported on insulated wire & cable from Thailand", "summary": "A 10.1% anti-dumping duty affecting insulated wire & cable of Thailand origin has been recorded (in force).", "source_url": "https://www.globaltradealert.org/intervention/60025"}, {"alert_id": "GTA0027", "published_date": "2025-12-15", "implementing_jurisdiction": "USA", "affected_partner_country": "China", "measure_type": "Section 301 tariff", "affected_hs_codes": "3926.90", "tariff_rate_change_pct": 5.4, "status": "Under review", "headline": "Section 301 tariff reported on polymer housings from China", "summary": "A 5.4% section 301 tariff affecting polymer housings of China origin has been recorded (under review).", "source_url": "https://www.globaltradealert.org/intervention/60027"}, {"alert_id": "GTA0026", "published_date": "2025-12-05", "implementing_jurisdiction": "USA", "affected_partner_country": "Mexico", "measure_type": "Section 232 tariff", "affected_hs_codes": "7326.90", "tariff_rate_change_pct": 9.4, "status": "In force", "headline": "Section 232 tariff reported on steel hardware from Mexico", "summary": "A 9.4% section 232 tariff affecting steel hardware of Mexico origin has been recorded (in force).", "source_url": "https://www.globaltradealert.org/intervention/60026"}, {"alert_id": "GTA0013", "published_date": "2025-11-10", "implementing_jurisdiction": "USA", "affected_partner_country": "Taiwan", "measure_type": "Anti-dumping duty", "affected_hs_codes": "8534.00", "tariff_rate_change_pct": 4.5, "status": "Announced", "headline": "Preliminary review of Taiwanese laminate imports announced", "summary": "A preliminary 4.5% margin has been floated on selected Taiwanese copper-clad laminates; not yet collected.", "source_url": "https://www.globaltradealert.org/intervention/60013"}, {"alert_id": "GTA0029", "published_date": "2025-10-29", "implementing_jurisdiction": "USA", "affected_partner_country": "Vietnam", "measure_type": "Section 232 tariff", "affected_hs_codes": "7616.99;7606.12", "tariff_rate_change_pct": 6.7, "status": "Under review", "headline": "Section 232 tariff reported on aluminium enclosures from Vietnam", "summary": "A 6.7% section 232 tariff affecting aluminium enclosures of Vietnam origin has been recorded (under review).", "source_url": "https://www.globaltradealert.org/intervention/60029"}, {"alert_id": "GTA0023", "published_date": "2025-10-20", "implementing_jurisdiction": "USA", "affected_partner_country": "South Korea", "measure_type": "Anti-dumping duty", "affected_hs_codes": "9013.80", "tariff_rate_change_pct": 11.4, "status": "Under review", "headline": "Anti-dumping duty reported on display modules from South Korea", "summary": "A 11.4% anti-dumping duty affecting display modules of South Korea origin has been recorded (under review).", "source_url": "https://www.globaltradealert.org/intervention/60023"}, {"alert_id": "GTA0004", "published_date": "2025-09-25", "implementing_jurisdiction": "USA", "affected_partner_country": "China", "measure_type": "Section 301 tariff", "affected_hs_codes": "8532.24;8532.21", "tariff_rate_change_pct": 15.0, "status": "In force", "headline": "Chinese multilayer ceramic capacitors added to Section 301 tariff list", "summary": "Passive components including MLCCs from China now carry a 15% additional duty, affecting high-volume board assemblies.", "source_url": "https://www.globaltradealert.org/intervention/60004"}], "parts": [{"id": "P0001", "desc": "Metal-core PCB", "category": "PCB & Laminates", "hs": "8534.00", "country": "Mexico", "region": "North America", "supplier_id": "S046", "supplier": "Kanto Assemblies", "tier": 1, "unit_cost": 8.157, "volume": 634346, "spend": 5174360.32, "crit": "High", "single_source": false, "otd": 87.7, "base_delta": 0.0, "base_after": 8.157, "base_impact": 0.0, "base_score": 20.7, "base_band": "Green", "matched": ""}, {"id": "P0002", "desc": "21700 Li-ion cell", "category": "Li-ion Cells & Batteries", "hs": "8507.60", "country": "China", "region": "East Asia", "supplier_id": "S014", "supplier": "Lumen Industries", "tier": 1, "unit_cost": 6.189, "volume": 129932, "spend": 804149.15, "crit": "Low", "single_source": false, "otd": 94.2, "base_delta": 18.4, "base_after": 7.3278, "base_impact": 147966.56, "base_score": 60.7, "base_band": "Red", "matched": "GTA0003"}, {"id": "P0003", "desc": "6-layer FR4 PCB", "category": "PCB & Laminates", "hs": "8534.00", "country": "Malaysia", "region": "SE Asia", "supplier_id": "S040", "supplier": "Vireo Systems", "tier": 1, "unit_cost": 3.12, "volume": 768995, "spend": 2399264.4, "crit": "Low", "single_source": true, "otd": 87.1, "base_delta": 4.8, "base_after": 3.2698, "base_impact": 115195.45, "base_score": 65.3, "base_band": "Red", "matched": "GTA0028"}, {"id": "P0004", "desc": "Extruded heatsink", "category": "Aluminium Enclosures", "hs": "7616.99", "country": "Malaysia", "region": "SE Asia", "supplier_id": "S013", "supplier": "Halcyon Technologies", "tier": 1, "unit_cost": 8.22, "volume": 479846, "spend": 3944334.12, "crit": "High", "single_source": false, "otd": 94.2, "base_delta": 0.0, "base_after": 8.22, "base_impact": 0.0, "base_score": 20.3, "base_band": "Green", "matched": ""}, {"id": "P0005", "desc": "Board-to-board connector", "category": "Connectors", "hs": "8536.90", "country": "Mexico", "region": "North America", "supplier_id": "S003", "supplier": "Verda Components", "tier": 1, "unit_cost": 1.141, "volume": 562351, "spend": 641642.49, "crit": "Medium", "single_source": false, "otd": 92.2, "base_delta": 0.0, "base_after": 1.141, "base_impact": 0.0, "base_score": 11.5, "base_band": "Green", "matched": ""}, {"id": "P0006", "desc": "Board-to-board connector", "category": "Connectors", "hs": "8536.69", "country": "Taiwan", "region": "East Asia", "supplier_id": "S044", "supplier": "Sable Systems", "tier": 1, "unit_cost": 0.665, "volume": 697822, "spend": 464051.63, "crit": "High", "single_source": true, "otd": 95.0, "base_delta": 0.0, "base_after": 0.665, "base_impact": 0.0, "base_score": 34.3, "base_band": "Amber", "matched": ""}, {"id": "P0007", "desc": "5.5in TFT-LCD module", "category": "Display Modules", "hs": "9013.80", "country": "Thailand", "region": "SE Asia", "supplier_id": "S029", "supplier": "Orin Industries", "tier": 1, "unit_cost": 27.248, "volume": 243943, "spend": 6646958.86, "crit": "Medium", "single_source": false, "otd": 99.5, "base_delta": 0.0, "base_after": 27.248, "base_impact": 0.0, "base_score": 11.0, "base_band": "Green", "matched": ""}, {"id": "P0008", "desc": "Silicone keypad", "category": "Polymer Housings", "hs": "3926.90", "country": "Taiwan", "region": "East Asia", "supplier_id": "S009", "supplier": "Miran Circuit Works", "tier": 1, "unit_cost": 3.677, "volume": 496308, "spend": 1824924.52, "crit": "High", "single_source": true, "otd": 90.7, "base_delta": 0.0, "base_after": 3.677, "base_impact": 0.0, "base_score": 34.6, "base_band": "Amber", "matched": ""}, {"id": "P0009", "desc": "USB-C receptacle", "category": "Connectors", "hs": "8536.69", "country": "Taiwan", "region": "East Asia", "supplier_id": "S044", "supplier": "Sable Systems", "tier": 1, "unit_cost": 1.571, "volume": 591325, "spend": 928971.58, "crit": "High", "single_source": true, "otd": 95.0, "base_delta": 0.0, "base_after": 1.571, "base_impact": 0.0, "base_score": 34.3, "base_band": "Amber", "matched": ""}, {"id": "P0010", "desc": "e-Paper module", "category": "Display Modules", "hs": "9013.80", "country": "Vietnam", "region": "SE Asia", "supplier_id": "S030", "supplier": "Trigon Fabrication", "tier": 2, "unit_cost": 58.355, "volume": 375550, "spend": 21915220.25, "crit": "Medium", "single_source": false, "otd": 86.6, "base_delta": 0.0, "base_after": 58.355, "base_impact": 0.0, "base_score": 11.8, "base_band": "Green", "matched": ""}, {"id": "P0011", "desc": "Coin cell CR2032", "category": "Li-ion Cells & Batteries", "hs": "8507.60", "country": "Thailand", "region": "SE Asia", "supplier_id": "S008", "supplier": "Hanwa Industries", "tier": 1, "unit_cost": 11.133, "volume": 264706, "spend": 2946971.9, "crit": "Medium", "single_source": false, "otd": 97.0, "base_delta": 0.0, "base_after": 11.133, "base_impact": 0.0, "base_score": 11.2, "base_band": "Green", "matched": ""}, {"id": "P0012", "desc": "RF coax connector", "category": "Connectors", "hs": "8536.69", "country": "India", "region": "South Asia", "supplier_id": "S038", "supplier": "Ferro Circuit Works", "tier": 2, "unit_cost": 1.053, "volume": 155030, "spend": 163246.59, "crit": "Medium", "single_source": false, "otd": 95.2, "base_delta": 6.7, "base_after": 1.1236, "base_impact": 10945.12, "base_score": 26.6, "base_band": "Amber", "matched": "GTA0020"}, {"id": "P0013", "desc": "8-layer backplane", "category": "PCB & Laminates", "hs": "8534.00", "country": "South Korea", "region": "East Asia", "supplier_id": "S036", "supplier": "Ceyl Technologies", "tier": 1, "unit_cost": 2.402, "volume": 830002, "spend": 1993664.8, "crit": "Low", "single_source": false, "otd": 91.8, "base_delta": 0.0, "base_after": 2.402, "base_impact": 0.0, "base_score": 4.5, "base_band": "Green", "matched": ""}, {"id": "P0014", "desc": "5.5in TFT-LCD module", "category": "Display Modules", "hs": "9013.80", "country": "Thailand", "region": "SE Asia", "supplier_id": "S029", "supplier": "Orin Industries", "tier": 1, "unit_cost": 38.246, "volume": 103813, "spend": 3970432.0, "crit": "Medium", "single_source": false, "otd": 99.5, "base_delta": 0.0, "base_after": 38.246, "base_impact": 0.0, "base_score": 11.0, "base_band": "Green", "matched": ""}, {"id": "P0015", "desc": "FFC/FPC connector", "category": "Connectors", "hs": "8536.90", "country": "Taiwan", "region": "East Asia", "supplier_id": "S044", "supplier": "Sable Systems", "tier": 1, "unit_cost": 0.987, "volume": 590194, "spend": 582521.48, "crit": "High", "single_source": true, "otd": 95.0, "base_delta": 0.0, "base_after": 0.987, "base_impact": 0.0, "base_score": 34.3, "base_band": "Amber", "matched": ""}, {"id": "P0016", "desc": "HDI rigid-flex PCB", "category": "PCB & Laminates", "hs": "8534.00", "country": "Mexico", "region": "North America", "supplier_id": "S046", "supplier": "Kanto Assemblies", "tier": 1, "unit_cost": 2.373, "volume": 503247, "spend": 1194205.13, "crit": "High", "single_source": false, "otd": 87.7, "base_delta": 0.0, "base_after": 2.373, "base_impact": 0.0, "base_score": 20.7, "base_band": "Green", "matched": ""}, {"id": "P0017", "desc": "PBT connector housing", "category": "Polymer Housings", "hs": "3926.90", "country": "USA", "region": "North America", "supplier_id": "S023", "supplier": "Cobalt Circuit Works", "tier": 2, "unit_cost": 3.89, "volume": 471210, "spend": 1833006.9, "crit": "Low", "single_source": true, "otd": 91.1, "base_delta": 0.0, "base_after": 3.89, "base_impact": 0.0, "base_score": 18.5, "base_band": "Green", "matched": ""}, {"id": "P0018", "desc": "DC-DC converter IC", "category": "Semiconductors/ICs", "hs": "8542.39", "country": "Japan", "region": "East Asia", "supplier_id": "S050", "supplier": "Volt Semicon", "tier": 3, "unit_cost": 8.724, "volume": 256512, "spend": 2237810.69, "crit": "High", "single_source": false, "otd": 86.6, "base_delta": 0.0, "base_after": 8.724, "base_impact": 0.0, "base_score": 20.8, "base_band": "Green", "matched": ""}, {"id": "P0019", "desc": "Steel standoff set", "category": "Steel Hardware", "hs": "7326.90", "country": "China", "region": "East Asia", "supplier_id": "S048", "supplier": "Lumen Components", "tier": 1, "unit_cost": 0.976, "volume": 784298, "spend": 765474.85, "crit": "High", "single_source": false, "otd": 86.7, "base_delta": 0.0, "base_after": 0.976, "base_impact": 0.0, "base_score": 20.8, "base_band": "Green", "matched": ""}, {"id": "P0020", "desc": "Film capacitor 1uF", "category": "Capacitors", "hs": "8532.21", "country": "China", "region": "East Asia", "supplier_id": "S019", "supplier": "Sable Devices", "tier": 1, "unit_cost": 0.051, "volume": 1884204, "spend": 96094.4, "crit": "Low", "single_source": true, "otd": 90.5, "base_delta": 15.0, "base_after": 0.0586, "base_impact": 14319.95, "base_score": 34.9, "base_band": "Amber", "matched": "GTA0004"}, {"id": "P0021", "desc": "PBT connector housing", "category": "Polymer Housings", "hs": "3926.90", "country": "Japan", "region": "East Asia", "supplier_id": "S045", "supplier": "Kori Technologies", "tier": 3, "unit_cost": 0.702, "volume": 32920, "spend": 23109.84, "crit": "Medium", "single_source": false, "otd": 99.5, "base_delta": 0.0, "base_after": 0.702, "base_impact": 0.0, "base_score": 11.0, "base_band": "Green", "matched": ""}, {"id": "P0022", "desc": "MLCC array 0402", "category": "Capacitors", "hs": "8532.21", "country": "Taiwan", "region": "East Asia", "supplier_id": "S024", "supplier": "Halcyon Components", "tier": 1, "unit_cost": 0.042, "volume": 3649440, "spend": 153276.48, "crit": "Low", "single_source": false, "otd": 92.2, "base_delta": 0.0, "base_after": 0.042, "base_impact": 0.0, "base_score": 4.5, "base_band": "Green", "matched": ""}, {"id": "P0023", "desc": "32-bit MCU", "category": "Semiconductors/ICs", "hs": "8542.31", "country": "Japan", "region": "East Asia", "supplier_id": "S050", "supplier": "Volt Semicon", "tier": 3, "unit_cost": 11.807, "volume": 896008, "spend": 10579166.46, "crit": "High", "single_source": false, "otd": 86.6, "base_delta": 0.0, "base_after": 11.807, "base_impact": 0.0, "base_score": 20.8, "base_band": "Green", "matched": ""}, {"id": "P0024", "desc": "5.5in TFT-LCD module", "category": "Display Modules", "hs": "9013.80", "country": "China", "region": "East Asia", "supplier_id": "S043", "supplier": "Hanwa Microelectronics", "tier": 2, "unit_cost": 18.961, "volume": 640757, "spend": 12149393.48, "crit": "Low", "single_source": false, "otd": 98.3, "base_delta": 20.0, "base_after": 22.7532, "base_impact": 2429878.7, "base_score": 61.1, "base_band": "Red", "matched": "GTA0012"}, {"id": "P0025", "desc": "e-Paper module", "category": "Display Modules", "hs": "9013.80", "country": "Taiwan", "region": "East Asia", "supplier_id": "S001", "supplier": "Nexa Technologies", "tier": 1, "unit_cost": 26.137, "volume": 203970, "spend": 5331163.89, "crit": "High", "single_source": false, "otd": 90.6, "base_delta": 0.0, "base_after": 26.137, "base_impact": 0.0, "base_score": 20.6, "base_band": "Green", "matched": ""}, {"id": "P0026", "desc": "Spring steel clip", "category": "Steel Hardware", "hs": "7326.90", "country": "China", "region": "East Asia", "supplier_id": "S011", "supplier": "Doran Precision", "tier": 2, "unit_cost": 1.581, "volume": 755947, "spend": 1195152.21, "crit": "Medium", "single_source": false, "otd": 92.5, "base_delta": 0.0, "base_after": 1.581, "base_impact": 0.0, "base_score": 11.4, "base_band": "Green", "matched": ""}, {"id": "P0027", "desc": "EMI gasket frame", "category": "Steel Hardware", "hs": "7326.90", "country": "China", "region": "East Asia", "supplier_id": "S048", "supplier": "Lumen Components", "tier": 1, "unit_cost": 0.636, "volume": 891483, "spend": 566983.19, "crit": "High", "single_source": false, "otd": 86.7, "base_delta": 0.0, "base_after": 0.636, "base_impact": 0.0, "base_score": 20.8, "base_band": "Green", "matched": ""}, {"id": "P0028", "desc": "PC/ABS bezel", "category": "Polymer Housings", "hs": "3926.90", "country": "Vietnam", "region": "SE Asia", "supplier_id": "S025", "supplier": "Orin Microelectronics", "tier": 2, "unit_cost": 2.029, "volume": 90443, "spend": 183508.85, "crit": "Medium", "single_source": false, "otd": 88.6, "base_delta": 0.0, "base_after": 2.029, "base_impact": 0.0, "base_score": 11.7, "base_band": "Green", "matched": ""}, {"id": "P0029", "desc": "LCD backlight unit", "category": "Display Modules", "hs": "9013.80", "country": "Thailand", "region": "SE Asia", "supplier_id": "S029", "supplier": "Orin Industries", "tier": 1, "unit_cost": 13.742, "volume": 152592, "spend": 2096919.26, "crit": "Medium", "single_source": false, "otd": 99.5, "base_delta": 0.0, "base_after": 13.742, "base_impact": 0.0, "base_score": 11.0, "base_band": "Green", "matched": ""}, {"id": "P0030", "desc": "USB-C receptacle", "category": "Connectors", "hs": "8536.90", "country": "Mexico", "region": "North America", "supplier_id": "S003", "supplier": "Verda Components", "tier": 1, "unit_cost": 1.238, "volume": 191060, "spend": 236532.28, "crit": "Medium", "single_source": false, "otd": 92.2, "base_delta": 0.0, "base_after": 1.238, "base_impact": 0.0, "base_score": 11.5, "base_band": "Green", "matched": ""}, {"id": "P0031", "desc": "Touch panel assembly", "category": "Display Modules", "hs": "9013.80", "country": "Vietnam", "region": "SE Asia", "supplier_id": "S030", "supplier": "Trigon Fabrication", "tier": 2, "unit_cost": 14.846, "volume": 256607, "spend": 3809587.52, "crit": "Medium", "single_source": false, "otd": 86.6, "base_delta": 0.0, "base_after": 14.846, "base_impact": 0.0, "base_score": 11.8, "base_band": "Green", "matched": ""}, {"id": "P0032", "desc": "PC/ABS bezel", "category": "Polymer Housings", "hs": "3926.90", "country": "Thailand", "region": "SE Asia", "supplier_id": "S041", "supplier": "Lumen Technologies", "tier": 1, "unit_cost": 1.737, "volume": 377990, "spend": 656568.63, "crit": "Medium", "single_source": true, "otd": 94.6, "base_delta": 0.0, "base_after": 1.737, "base_impact": 0.0, "base_score": 25.3, "base_band": "Amber", "matched": ""}, {"id": "P0033", "desc": "e-Paper module", "category": "Display Modules", "hs": "9013.80", "country": "China", "region": "East Asia", "supplier_id": "S004", "supplier": "Vireo Assemblies", "tier": 1, "unit_cost": 13.287, "volume": 674427, "spend": 8961111.55, "crit": "Medium", "single_source": false, "otd": 91.0, "base_delta": 20.0, "base_after": 15.9444, "base_impact": 1792222.31, "base_score": 68.5, "base_band": "Red", "matched": "GTA0012"}, {"id": "P0034", "desc": "Spring steel clip", "category": "Steel Hardware", "hs": "7326.90", "country": "China", "region": "East Asia", "supplier_id": "S048", "supplier": "Lumen Components", "tier": 1, "unit_cost": 0.925, "volume": 487586, "spend": 451017.05, "crit": "High", "single_source": false, "otd": 86.7, "base_delta": 0.0, "base_after": 0.925, "base_impact": 0.0, "base_score": 20.8, "base_band": "Green", "matched": ""}, {"id": "P0035", "desc": "e-Paper module", "category": "Display Modules", "hs": "9013.80", "country": "Vietnam", "region": "SE Asia", "supplier_id": "S030", "supplier": "Trigon Fabrication", "tier": 2, "unit_cost": 18.869, "volume": 288382, "spend": 5441479.96, "crit": "Medium", "single_source": false, "otd": 86.6, "base_delta": 0.0, "base_after": 18.869, "base_impact": 0.0, "base_score": 11.8, "base_band": "Green", "matched": ""}, {"id": "P0036", "desc": "Spring steel clip", "category": "Steel Hardware", "hs": "7326.90", "country": "South Korea", "region": "East Asia", "supplier_id": "S022", "supplier": "Meishan Circuit Works", "tier": 2, "unit_cost": 0.449, "volume": 39305, "spend": 17647.94, "crit": "Low", "single_source": false, "otd": 98.5, "base_delta": 0.0, "base_after": 0.449, "base_impact": 0.0, "base_score": 4.1, "base_band": "Green", "matched": ""}, {"id": "P0037", "desc": "HDI rigid-flex PCB", "category": "PCB & Laminates", "hs": "8534.00", "country": "Malaysia", "region": "SE Asia", "supplier_id": "S040", "supplier": "Vireo Systems", "tier": 1, "unit_cost": 2.864, "volume": 27521, "spend": 78820.14, "crit": "Low", "single_source": true, "otd": 87.1, "base_delta": 4.8, "base_after": 3.0015, "base_impact": 3784.14, "base_score": 31.9, "base_band": "Amber", "matched": "GTA0028"}, {"id": "P0038", "desc": "OLED display 1.3in", "category": "Display Modules", "hs": "9013.80", "country": "Taiwan", "region": "East Asia", "supplier_id": "S002", "supplier": "Ceyl Industries", "tier": 1, "unit_cost": 15.872, "volume": 627903, "spend": 9966076.42, "crit": "Medium", "single_source": false, "otd": 95.3, "base_delta": 0.0, "base_after": 15.872, "base_impact": 0.0, "base_score": 11.3, "base_band": "Green", "matched": ""}, {"id": "P0039", "desc": "FFC/FPC connector", "category": "Connectors", "hs": "8536.69", "country": "India", "region": "South Asia", "supplier_id": "S038", "supplier": "Ferro Circuit Works", "tier": 2, "unit_cost": 1.026, "volume": 26436, "spend": 27123.34, "crit": "Medium", "single_source": false, "otd": 95.2, "base_delta": 6.7, "base_after": 1.0947, "base_impact": 1816.15, "base_score": 23.8, "base_band": "Amber", "matched": "GTA0020"}, {"id": "P0040", "desc": "Ceramic substrate", "category": "PCB & Laminates", "hs": "8534.00", "country": "Malaysia", "region": "SE Asia", "supplier_id": "S040", "supplier": "Vireo Systems", "tier": 1, "unit_cost": 8.192, "volume": 883989, "spend": 7241637.89, "crit": "Low", "single_source": true, "otd": 87.1, "base_delta": 4.8, "base_after": 8.5852, "base_impact": 347584.47, "base_score": 75.8, "base_band": "Red", "matched": "GTA0028"}, {"id": "P0041", "desc": "Ceramic substrate", "category": "PCB & Laminates", "hs": "8534.00", "country": "Mexico", "region": "North America", "supplier_id": "S046", "supplier": "Kanto Assemblies", "tier": 1, "unit_cost": 1.259, "volume": 814928, "spend": 1025994.35, "crit": "High", "single_source": false, "otd": 87.7, "base_delta": 0.0, "base_after": 1.259, "base_impact": 0.0, "base_score": 20.7, "base_band": "Green", "matched": ""}, {"id": "P0042", "desc": "8-layer backplane", "category": "PCB & Laminates", "hs": "8534.00", "country": "Mexico", "region": "North America", "supplier_id": "S046", "supplier": "Kanto Assemblies", "tier": 1, "unit_cost": 6.003, "volume": 782785, "spend": 4699058.36, "crit": "High", "single_source": false, "otd": 87.7, "base_delta": 0.0, "base_after": 6.003, "base_impact": 0.0, "base_score": 20.7, "base_band": "Green", "matched": ""}, {"id": "P0043", "desc": "Silicone keypad", "category": "Polymer Housings", "hs": "3926.90", "country": "Japan", "region": "East Asia", "supplier_id": "S028", "supplier": "Ostro Components", "tier": 1, "unit_cost": 2.137, "volume": 506731, "spend": 1082884.15, "crit": "Low", "single_source": false, "otd": 90.0, "base_delta": 0.0, "base_after": 2.137, "base_impact": 0.0, "base_score": 4.6, "base_band": "Green", "matched": ""}, {"id": "P0044", "desc": "RF transceiver", "category": "Semiconductors/ICs", "hs": "8542.31", "country": "Japan", "region": "East Asia", "supplier_id": "S050", "supplier": "Volt Semicon", "tier": 3, "unit_cost": 23.616, "volume": 873911, "spend": 20638282.18, "crit": "High", "single_source": false, "otd": 86.6, "base_delta": 0.0, "base_after": 23.616, "base_impact": 0.0, "base_score": 20.8, "base_band": "Green", "matched": ""}, {"id": "P0045", "desc": "Prismatic cell 50Ah", "category": "Li-ion Cells & Batteries", "hs": "8507.60", "country": "Thailand", "region": "SE Asia", "supplier_id": "S008", "supplier": "Hanwa Industries", "tier": 1, "unit_cost": 3.426, "volume": 467198, "spend": 1600620.35, "crit": "Medium", "single_source": false, "otd": 97.0, "base_delta": 0.0, "base_after": 3.426, "base_impact": 0.0, "base_score": 11.2, "base_band": "Green", "matched": ""}, {"id": "P0046", "desc": "Signal amplifier IC", "category": "Semiconductors/ICs", "hs": "8542.39", "country": "Japan", "region": "East Asia", "supplier_id": "S050", "supplier": "Volt Semicon", "tier": 3, "unit_cost": 3.911, "volume": 429176, "spend": 1678507.34, "crit": "High", "single_source": false, "otd": 86.6, "base_delta": 0.0, "base_after": 3.911, "base_impact": 0.0, "base_score": 20.8, "base_band": "Green", "matched": ""}, {"id": "P0047", "desc": "Ceramic substrate", "category": "PCB & Laminates", "hs": "8534.00", "country": "Mexico", "region": "North America", "supplier_id": "S046", "supplier": "Kanto Assemblies", "tier": 1, "unit_cost": 3.069, "volume": 94640, "spend": 290450.16, "crit": "High", "single_source": false, "otd": 87.7, "base_delta": 0.0, "base_after": 3.069, "base_impact": 0.0, "base_score": 20.7, "base_band": "Green", "matched": ""}, {"id": "P0048", "desc": "Signal amplifier IC", "category": "Semiconductors/ICs", "hs": "8542.32", "country": "Japan", "region": "East Asia", "supplier_id": "S050", "supplier": "Volt Semicon", "tier": 3, "unit_cost": 11.886, "volume": 68447, "spend": 813561.04, "crit": "High", "single_source": false, "otd": 86.6, "base_delta": 0.0, "base_after": 11.886, "base_impact": 0.0, "base_score": 20.8, "base_band": "Green", "matched": ""}, {"id": "P0049", "desc": "LiPo pouch cell 3000mAh", "category": "Li-ion Cells & Batteries", "hs": "8507.60", "country": "Thailand", "region": "SE Asia", "supplier_id": "S008", "supplier": "Hanwa Industries", "tier": 1, "unit_cost": 7.311, "volume": 691168, "spend": 5053129.25, "crit": "Medium", "single_source": false, "otd": 97.0, "base_delta": 0.0, "base_after": 7.311, "base_impact": 0.0, "base_score": 11.2, "base_band": "Green", "matched": ""}, {"id": "P0050", "desc": "FPGA module", "category": "Semiconductors/ICs", "hs": "8542.39", "country": "Japan", "region": "East Asia", "supplier_id": "S050", "supplier": "Volt Semicon", "tier": 3, "unit_cost": 13.575, "volume": 670699, "spend": 9104738.92, "crit": "High", "single_source": false, "otd": 86.6, "base_delta": 0.0, "base_after": 13.575, "base_impact": 0.0, "base_score": 20.8, "base_band": "Green", "matched": ""}, {"id": "P0051", "desc": "Aluminium electrolytic 470uF", "category": "Capacitors", "hs": "8532.24", "country": "USA", "region": "North America", "supplier_id": "S016", "supplier": "Ferro Industries", "tier": 1, "unit_cost": 0.048, "volume": 2463000, "spend": 118224.0, "crit": "Medium", "single_source": false, "otd": 91.9, "base_delta": 0.0, "base_after": 0.048, "base_impact": 0.0, "base_score": 11.5, "base_band": "Green", "matched": ""}, {"id": "P0052", "desc": "5.5in TFT-LCD module", "category": "Display Modules", "hs": "9013.80", "country": "South Korea", "region": "East Asia", "supplier_id": "S042", "supplier": "Kanto Precision", "tier": 1, "unit_cost": 27.844, "volume": 688489, "spend": 19170287.72, "crit": "Low", "single_source": false, "otd": 82.7, "base_delta": 0.0, "base_after": 27.844, "base_impact": 0.0, "base_score": 5.0, "base_band": "Green", "matched": ""}, {"id": "P0053", "desc": "Touch panel assembly", "category": "Display Modules", "hs": "9013.80", "country": "South Korea", "region": "East Asia", "supplier_id": "S042", "supplier": "Kanto Precision", "tier": 1, "unit_cost": 13.076, "volume": 385201, "spend": 5036888.28, "crit": "Low", "single_source": false, "otd": 82.7, "base_delta": 0.0, "base_after": 13.076, "base_impact": 0.0, "base_score": 5.0, "base_band": "Green", "matched": ""}, {"id": "P0054", "desc": "MLCC 1206 X7R", "category": "Capacitors", "hs": "8532.21", "country": "China", "region": "East Asia", "supplier_id": "S049", "supplier": "Doran Fabrication", "tier": 1, "unit_cost": 0.023, "volume": 1698420, "spend": 39063.66, "crit": "Low", "single_source": true, "otd": 91.0, "base_delta": 15.0, "base_after": 0.0264, "base_impact": 5774.63, "base_score": 32.3, "base_band": "Amber", "matched": "GTA0004"}, {"id": "P0055", "desc": "MLCC 1206 X7R", "category": "Capacitors", "hs": "8532.21", "country": "China", "region": "East Asia", "supplier_id": "S019", "supplier": "Sable Devices", "tier": 1, "unit_cost": 0.034, "volume": 3706824, "spend": 126032.02, "crit": "Low", "single_source": true, "otd": 90.5, "base_delta": 15.0, "base_after": 0.0391, "base_impact": 18904.8, "base_score": 36.2, "base_band": "Amber", "matched": "GTA0004"}, {"id": "P0056", "desc": "ABS enclosure top", "category": "Polymer Housings", "hs": "3926.90", "country": "Japan", "region": "East Asia", "supplier_id": "S045", "supplier": "Kori Technologies", "tier": 3, "unit_cost": 2.695, "volume": 489551, "spend": 1319339.94, "crit": "Medium", "single_source": false, "otd": 99.5, "base_delta": 0.0, "base_after": 2.695, "base_impact": 0.0, "base_score": 11.0, "base_band": "Green", "matched": ""}, {"id": "P0057", "desc": "Coax assembly RG-174", "category": "Insulated Wire & Cable", "hs": "8544.49", "country": "China", "region": "East Asia", "supplier_id": "S026", "supplier": "Kori Microelectronics", "tier": 2, "unit_cost": 1.496, "volume": 140402, "spend": 210041.39, "crit": "Low", "single_source": false, "otd": 91.4, "base_delta": 0.0, "base_after": 1.496, "base_impact": 0.0, "base_score": 4.5, "base_band": "Green", "matched": ""}, {"id": "P0058", "desc": "FFC/FPC connector", "category": "Connectors", "hs": "8536.90", "country": "Taiwan", "region": "East Asia", "supplier_id": "S044", "supplier": "Sable Systems", "tier": 1, "unit_cost": 0.977, "volume": 456305, "spend": 445809.98, "crit": "High", "single_source": true, "otd": 95.0, "base_delta": 0.0, "base_after": 0.977, "base_impact": 0.0, "base_score": 34.3, "base_band": "Amber", "matched": ""}, {"id": "P0059", "desc": "Coin cell CR2032", "category": "Li-ion Cells & Batteries", "hs": "8507.60", "country": "Thailand", "region": "SE Asia", "supplier_id": "S008", "supplier": "Hanwa Industries", "tier": 1, "unit_cost": 14.965, "volume": 92530, "spend": 1384711.45, "crit": "Medium", "single_source": false, "otd": 97.0, "base_delta": 0.0, "base_after": 14.965, "base_impact": 0.0, "base_score": 11.2, "base_band": "Green", "matched": ""}, {"id": "P0060", "desc": "5.5in TFT-LCD module", "category": "Display Modules", "hs": "9013.80", "country": "Taiwan", "region": "East Asia", "supplier_id": "S002", "supplier": "Ceyl Industries", "tier": 1, "unit_cost": 14.247, "volume": 867566, "spend": 12360212.8, "crit": "Medium", "single_source": false, "otd": 95.3, "base_delta": 0.0, "base_after": 14.247, "base_impact": 0.0, "base_score": 11.3, "base_band": "Green", "matched": ""}, {"id": "P0061", "desc": "Silicone keypad", "category": "Polymer Housings", "hs": "3926.90", "country": "China", "region": "East Asia", "supplier_id": "S027", "supplier": "Zhen Interconnect", "tier": 1, "unit_cost": 0.815, "volume": 866854, "spend": 706486.01, "crit": "Medium", "single_source": false, "otd": 87.6, "base_delta": 0.0, "base_after": 0.815, "base_impact": 0.0, "base_score": 11.7, "base_band": "Green", "matched": ""}, {"id": "P0062", "desc": "Tantalum capacitor 47uF", "category": "Capacitors", "hs": "8532.21", "country": "China", "region": "East Asia", "supplier_id": "S019", "supplier": "Sable Devices", "tier": 1, "unit_cost": 0.026, "volume": 4856142, "spend": 126259.69, "crit": "Low", "single_source": true, "otd": 90.5, "base_delta": 15.0, "base_after": 0.0299, "base_impact": 18938.95, "base_score": 36.3, "base_band": "Amber", "matched": "GTA0004"}, {"id": "P0063", "desc": "DC-DC converter IC", "category": "Semiconductors/ICs", "hs": "8542.31", "country": "Japan", "region": "East Asia", "supplier_id": "S050", "supplier": "Volt Semicon", "tier": 3, "unit_cost": 2.635, "volume": 209752, "spend": 552696.52, "crit": "High", "single_source": false, "otd": 86.6, "base_delta": 0.0, "base_after": 2.635, "base_impact": 0.0, "base_score": 20.8, "base_band": "Green", "matched": ""}, {"id": "P0064", "desc": "Battery pack 4S", "category": "Li-ion Cells & Batteries", "hs": "8507.60", "country": "Taiwan", "region": "East Asia", "supplier_id": "S020", "supplier": "Sable Microelectronics", "tier": 1, "unit_cost": 3.365, "volume": 283732, "spend": 954758.18, "crit": "Low", "single_source": false, "otd": 97.7, "base_delta": 0.0, "base_after": 3.365, "base_impact": 0.0, "base_score": 4.1, "base_band": "Green", "matched": ""}, {"id": "P0065", "desc": "32-bit MCU", "category": "Semiconductors/ICs", "hs": "8542.31", "country": "Japan", "region": "East Asia", "supplier_id": "S050", "supplier": "Volt Semicon", "tier": 3, "unit_cost": 11.721, "volume": 269257, "spend": 3155961.3, "crit": "High", "single_source": false, "otd": 86.6, "base_delta": 0.0, "base_after": 11.721, "base_impact": 0.0, "base_score": 20.8, "base_band": "Green", "matched": ""}, {"id": "P0066", "desc": "Ceramic substrate", "category": "PCB & Laminates", "hs": "8534.00", "country": "Mexico", "region": "North America", "supplier_id": "S046", "supplier": "Kanto Assemblies", "tier": 1, "unit_cost": 5.741, "volume": 405779, "spend": 2329577.24, "crit": "High", "single_source": false, "otd": 87.7, "base_delta": 0.0, "base_after": 5.741, "base_impact": 0.0, "base_score": 20.7, "base_band": "Green", "matched": ""}, {"id": "P0067", "desc": "OLED display 1.3in", "category": "Display Modules", "hs": "9013.80", "country": "South Korea", "region": "East Asia", "supplier_id": "S042", "supplier": "Kanto Precision", "tier": 1, "unit_cost": 17.126, "volume": 736881, "spend": 12619824.01, "crit": "Low", "single_source": false, "otd": 82.7, "base_delta": 0.0, "base_after": 17.126, "base_impact": 0.0, "base_score": 5.0, "base_band": "Green", "matched": ""}, {"id": "P0068", "desc": "Ferrite bead", "category": "Resistors & Passives", "hs": "8533.21", "country": "China", "region": "East Asia", "supplier_id": "S012", "supplier": "Terna Systems", "tier": 3, "unit_cost": 0.063, "volume": 2375328, "spend": 149645.66, "crit": "Low", "single_source": false, "otd": 88.5, "base_delta": 15.0, "base_after": 0.0724, "base_impact": 22328.08, "base_score": 23.4, "base_band": "Amber", "matched": "GTA0014"}, {"id": "P0069", "desc": "e-Paper module", "category": "Display Modules", "hs": "9013.80", "country": "Vietnam", "region": "SE Asia", "supplier_id": "S030", "supplier": "Trigon Fabrication", "tier": 2, "unit_cost": 19.456, "volume": 142908, "spend": 2780418.05, "crit": "Medium", "single_source": false, "otd": 86.6, "base_delta": 0.0, "base_after": 19.456, "base_impact": 0.0, "base_score": 11.8, "base_band": "Green", "matched": ""}, {"id": "P0070", "desc": "21700 Li-ion cell", "category": "Li-ion Cells & Batteries", "hs": "8507.60", "country": "Thailand", "region": "SE Asia", "supplier_id": "S008", "supplier": "Hanwa Industries", "tier": 1, "unit_cost": 4.396, "volume": 65098, "spend": 286170.81, "crit": "Medium", "single_source": false, "otd": 97.0, "base_delta": 0.0, "base_after": 4.396, "base_impact": 0.0, "base_score": 11.2, "base_band": "Green", "matched": ""}, {"id": "P0071", "desc": "OLED display 1.3in", "category": "Display Modules", "hs": "9013.80", "country": "Thailand", "region": "SE Asia", "supplier_id": "S029", "supplier": "Orin Industries", "tier": 1, "unit_cost": 19.895, "volume": 715336, "spend": 14231609.72, "crit": "Medium", "single_source": false, "otd": 99.5, "base_delta": 0.0, "base_after": 19.895, "base_impact": 0.0, "base_score": 11.0, "base_band": "Green", "matched": ""}, {"id": "P0072", "desc": "LiPo pouch cell 3000mAh", "category": "Li-ion Cells & Batteries", "hs": "8507.60", "country": "Thailand", "region": "SE Asia", "supplier_id": "S008", "supplier": "Hanwa Industries", "tier": 1, "unit_cost": 6.318, "volume": 704215, "spend": 4449230.37, "crit": "Medium", "single_source": false, "otd": 97.0, "base_delta": 0.0, "base_after": 6.318, "base_impact": 0.0, "base_score": 11.2, "base_band": "Green", "matched": ""}, {"id": "P0073", "desc": "21700 Li-ion cell", "category": "Li-ion Cells & Batteries", "hs": "8507.60", "country": "China", "region": "East Asia", "supplier_id": "S014", "supplier": "Lumen Industries", "tier": 1, "unit_cost": 8.594, "volume": 451650, "spend": 3881480.1, "crit": "Low", "single_source": false, "otd": 94.2, "base_delta": 18.4, "base_after": 10.1753, "base_impact": 714194.15, "base_score": 61.3, "base_band": "Red", "matched": "GTA0003"}, {"id": "P0074", "desc": "OLED display 1.3in", "category": "Display Modules", "hs": "9013.80", "country": "Taiwan", "region": "East Asia", "supplier_id": "S001", "supplier": "Nexa Technologies", "tier": 1, "unit_cost": 31.245, "volume": 385005, "spend": 12029481.22, "crit": "High", "single_source": false, "otd": 90.6, "base_delta": 0.0, "base_after": 31.245, "base_impact": 0.0, "base_score": 20.6, "base_band": "Green", "matched": ""}, {"id": "P0075", "desc": "LCD backlight unit", "category": "Display Modules", "hs": "9013.80", "country": "Vietnam", "region": "SE Asia", "supplier_id": "S030", "supplier": "Trigon Fabrication", "tier": 2, "unit_cost": 11.978, "volume": 45738, "spend": 547849.76, "crit": "Medium", "single_source": false, "otd": 86.6, "base_delta": 0.0, "base_after": 11.978, "base_impact": 0.0, "base_score": 11.8, "base_band": "Green", "matched": ""}, {"id": "P0076", "desc": "HDI rigid-flex PCB", "category": "PCB & Laminates", "hs": "8534.00", "country": "Mexico", "region": "North America", "supplier_id": "S046", "supplier": "Kanto Assemblies", "tier": 1, "unit_cost": 2.519, "volume": 486167, "spend": 1224654.67, "crit": "High", "single_source": false, "otd": 87.7, "base_delta": 0.0, "base_after": 2.519, "base_impact": 0.0, "base_score": 20.7, "base_band": "Green", "matched": ""}, {"id": "P0077", "desc": "Power blade connector", "category": "Connectors", "hs": "8536.69", "country": "China", "region": "East Asia", "supplier_id": "S017", "supplier": "Axion Technologies", "tier": 1, "unit_cost": 0.567, "volume": 442279, "spend": 250772.19, "crit": "Low", "single_source": false, "otd": 82.3, "base_delta": 0.0, "base_after": 0.567, "base_impact": 0.0, "base_score": 5.1, "base_band": "Green", "matched": ""}, {"id": "P0078", "desc": "MLCC 1206 X7R", "category": "Capacitors", "hs": "8532.24", "country": "USA", "region": "North America", "supplier_id": "S021", "supplier": "Ostro Circuit Works", "tier": 3, "unit_cost": 0.034, "volume": 2732370, "spend": 92900.58, "crit": "Medium", "single_source": false, "otd": 93.9, "base_delta": 0.0, "base_after": 0.034, "base_impact": 0.0, "base_score": 11.4, "base_band": "Green", "matched": ""}, {"id": "P0079", "desc": "Al shield can", "category": "Aluminium Enclosures", "hs": "7616.99", "country": "Vietnam", "region": "SE Asia", "supplier_id": "S010", "supplier": "Ceyl Materials", "tier": 2, "unit_cost": 5.007, "volume": 61689, "spend": 308876.82, "crit": "Low", "single_source": true, "otd": 91.2, "base_delta": 0.0, "base_after": 5.007, "base_impact": 0.0, "base_score": 18.5, "base_band": "Green", "matched": ""}, {"id": "P0080", "desc": "LCD backlight unit", "category": "Display Modules", "hs": "9013.80", "country": "Taiwan", "region": "East Asia", "supplier_id": "S001", "supplier": "Nexa Technologies", "tier": 1, "unit_cost": 32.935, "volume": 185723, "spend": 6116787.01, "crit": "High", "single_source": false, "otd": 90.6, "base_delta": 0.0, "base_after": 32.935, "base_impact": 0.0, "base_score": 20.6, "base_band": "Green", "matched": ""}, {"id": "P0081", "desc": "Extruded heatsink", "category": "Aluminium Enclosures", "hs": "7616.99", "country": "South Korea", "region": "East Asia", "supplier_id": "S039", "supplier": "Trigon Industries", "tier": 2, "unit_cost": 9.96, "volume": 223028, "spend": 2221358.88, "crit": "Low", "single_source": true, "otd": 96.9, "base_delta": 0.0, "base_after": 9.96, "base_impact": 0.0, "base_score": 18.2, "base_band": "Green", "matched": ""}, {"id": "P0082", "desc": "Touch panel assembly", "category": "Display Modules", "hs": "9013.80", "country": "Taiwan", "region": "East Asia", "supplier_id": "S001", "supplier": "Nexa Technologies", "tier": 1, "unit_cost": 35.039, "volume": 489260, "spend": 17143181.14, "crit": "High", "single_source": false, "otd": 90.6, "base_delta": 0.0, "base_after": 35.039, "base_impact": 0.0, "base_score": 20.6, "base_band": "Green", "matched": ""}, {"id": "P0083", "desc": "Ceramic substrate", "category": "PCB & Laminates", "hs": "8534.00", "country": "Mexico", "region": "North America", "supplier_id": "S046", "supplier": "Kanto Assemblies", "tier": 1, "unit_cost": 2.687, "volume": 276197, "spend": 742141.34, "crit": "High", "single_source": false, "otd": 87.7, "base_delta": 0.0, "base_after": 2.687, "base_impact": 0.0, "base_score": 20.7, "base_band": "Green", "matched": ""}, {"id": "P0084", "desc": "OLED display 1.3in", "category": "Display Modules", "hs": "9013.80", "country": "Thailand", "region": "SE Asia", "supplier_id": "S029", "supplier": "Orin Industries", "tier": 1, "unit_cost": 61.278, "volume": 820300, "spend": 50266343.4, "crit": "Medium", "single_source": false, "otd": 99.5, "base_delta": 0.0, "base_after": 61.278, "base_impact": 0.0, "base_score": 11.0, "base_band": "Green", "matched": ""}, {"id": "P0085", "desc": "PBT connector housing", "category": "Polymer Housings", "hs": "3926.90", "country": "China", "region": "East Asia", "supplier_id": "S047", "supplier": "Elbe Industries", "tier": 3, "unit_cost": 2.914, "volume": 502392, "spend": 1463970.29, "crit": "Medium", "single_source": false, "otd": 94.4, "base_delta": 0.0, "base_after": 2.914, "base_impact": 0.0, "base_score": 11.3, "base_band": "Green", "matched": ""}, {"id": "P0086", "desc": "Machined Al chassis", "category": "Aluminium Enclosures", "hs": "7606.12", "country": "China", "region": "East Asia", "supplier_id": "S015", "supplier": "Nexa Devices", "tier": 1, "unit_cost": 7.963, "volume": 384342, "spend": 3060515.35, "crit": "Medium", "single_source": false, "otd": 94.8, "base_delta": 10.0, "base_after": 8.7593, "base_impact": 306051.53, "base_score": 68.3, "base_band": "Red", "matched": "GTA0005"}, {"id": "P0087", "desc": "e-Paper module", "category": "Display Modules", "hs": "9013.80", "country": "Taiwan", "region": "East Asia", "supplier_id": "S002", "supplier": "Ceyl Industries", "tier": 1, "unit_cost": 22.939, "volume": 324901, "spend": 7452904.04, "crit": "Medium", "single_source": false, "otd": 95.3, "base_delta": 0.0, "base_after": 22.939, "base_impact": 0.0, "base_score": 11.3, "base_band": "Green", "matched": ""}, {"id": "P0088", "desc": "PBT connector housing", "category": "Polymer Housings", "hs": "3926.90", "country": "Japan", "region": "East Asia", "supplier_id": "S045", "supplier": "Kori Technologies", "tier": 3, "unit_cost": 4.51, "volume": 643120, "spend": 2900471.2, "crit": "Medium", "single_source": false, "otd": 99.5, "base_delta": 0.0, "base_after": 4.51, "base_impact": 0.0, "base_score": 11.0, "base_band": "Green", "matched": ""}, {"id": "P0089", "desc": "DC-DC converter IC", "category": "Semiconductors/ICs", "hs": "8542.31", "country": "Japan", "region": "East Asia", "supplier_id": "S050", "supplier": "Volt Semicon", "tier": 3, "unit_cost": 9.557, "volume": 703245, "spend": 6720912.46, "crit": "High", "single_source": false, "otd": 86.6, "base_delta": 0.0, "base_after": 9.557, "base_impact": 0.0, "base_score": 20.8, "base_band": "Green", "matched": ""}, {"id": "P0090", "desc": "Chip resistor 0603", "category": "Resistors & Passives", "hs": "8533.21", "country": "China", "region": "East Asia", "supplier_id": "S012", "supplier": "Terna Systems", "tier": 3, "unit_cost": 0.016, "volume": 2798502, "spend": 44776.03, "crit": "Low", "single_source": false, "otd": 88.5, "base_delta": 15.0, "base_after": 0.0184, "base_impact": 6716.4, "base_score": 18.7, "base_band": "Amber", "matched": "GTA0014"}, {"id": "P0091", "desc": "Touch panel assembly", "category": "Display Modules", "hs": "9013.80", "country": "Taiwan", "region": "East Asia", "supplier_id": "S002", "supplier": "Ceyl Industries", "tier": 1, "unit_cost": 34.403, "volume": 893914, "spend": 30753323.34, "crit": "Medium", "single_source": false, "otd": 95.3, "base_delta": 0.0, "base_after": 34.403, "base_impact": 0.0, "base_score": 11.3, "base_band": "Green", "matched": ""}, {"id": "P0092", "desc": "Motor controller IC", "category": "Semiconductors/ICs", "hs": "8542.31", "country": "Japan", "region": "East Asia", "supplier_id": "S050", "supplier": "Volt Semicon", "tier": 3, "unit_cost": 8.583, "volume": 165556, "spend": 1420967.15, "crit": "High", "single_source": false, "otd": 86.6, "base_delta": 0.0, "base_after": 8.583, "base_impact": 0.0, "base_score": 20.8, "base_band": "Green", "matched": ""}, {"id": "P0093", "desc": "FFC/FPC connector", "category": "Connectors", "hs": "8536.90", "country": "Mexico", "region": "North America", "supplier_id": "S003", "supplier": "Verda Components", "tier": 1, "unit_cost": 1.162, "volume": 543219, "spend": 631220.48, "crit": "Medium", "single_source": false, "otd": 92.2, "base_delta": 0.0, "base_after": 1.162, "base_impact": 0.0, "base_score": 11.5, "base_band": "Green", "matched": ""}, {"id": "P0094", "desc": "Stainless fastener kit", "category": "Steel Hardware", "hs": "7326.90", "country": "China", "region": "East Asia", "supplier_id": "S048", "supplier": "Lumen Components", "tier": 1, "unit_cost": 1.152, "volume": 35981, "spend": 41450.11, "crit": "High", "single_source": false, "otd": 86.7, "base_delta": 0.0, "base_after": 1.152, "base_impact": 0.0, "base_score": 20.8, "base_band": "Green", "matched": ""}, {"id": "P0095", "desc": "RF transceiver", "category": "Semiconductors/ICs", "hs": "8542.39", "country": "Japan", "region": "East Asia", "supplier_id": "S050", "supplier": "Volt Semicon", "tier": 3, "unit_cost": 6.226, "volume": 183017, "spend": 1139463.84, "crit": "High", "single_source": false, "otd": 86.6, "base_delta": 0.0, "base_after": 6.226, "base_impact": 0.0, "base_score": 20.8, "base_band": "Green", "matched": ""}, {"id": "P0096", "desc": "Touch panel assembly", "category": "Display Modules", "hs": "9013.80", "country": "South Korea", "region": "East Asia", "supplier_id": "S042", "supplier": "Kanto Precision", "tier": 1, "unit_cost": 41.876, "volume": 691535, "spend": 28958719.66, "crit": "Low", "single_source": false, "otd": 82.7, "base_delta": 0.0, "base_after": 41.876, "base_impact": 0.0, "base_score": 5.0, "base_band": "Green", "matched": ""}, {"id": "P0097", "desc": "Power management IC", "category": "Semiconductors/ICs", "hs": "8542.32", "country": "Japan", "region": "East Asia", "supplier_id": "S050", "supplier": "Volt Semicon", "tier": 3, "unit_cost": 10.59, "volume": 388959, "spend": 4119075.81, "crit": "High", "single_source": false, "otd": 86.6, "base_delta": 0.0, "base_after": 10.59, "base_impact": 0.0, "base_score": 20.8, "base_band": "Green", "matched": ""}, {"id": "P0098", "desc": "HDI rigid-flex PCB", "category": "PCB & Laminates", "hs": "8534.00", "country": "Mexico", "region": "North America", "supplier_id": "S046", "supplier": "Kanto Assemblies", "tier": 1, "unit_cost": 3.264, "volume": 477802, "spend": 1559545.73, "crit": "High", "single_source": false, "otd": 87.7, "base_delta": 0.0, "base_after": 3.264, "base_impact": 0.0, "base_score": 20.7, "base_band": "Green", "matched": ""}, {"id": "P0099", "desc": "Gate driver IC", "category": "Semiconductors/ICs", "hs": "8542.32", "country": "Japan", "region": "East Asia", "supplier_id": "S050", "supplier": "Volt Semicon", "tier": 3, "unit_cost": 10.733, "volume": 432542, "spend": 4642473.29, "crit": "High", "single_source": false, "otd": 86.6, "base_delta": 0.0, "base_after": 10.733, "base_impact": 0.0, "base_score": 20.8, "base_band": "Green", "matched": ""}, {"id": "P0100", "desc": "Chip resistor 0603", "category": "Resistors & Passives", "hs": "8533.21", "country": "China", "region": "East Asia", "supplier_id": "S012", "supplier": "Terna Systems", "tier": 3, "unit_cost": 0.017, "volume": 1173576, "spend": 19950.79, "crit": "Low", "single_source": false, "otd": 88.5, "base_delta": 15.0, "base_after": 0.0196, "base_impact": 3051.3, "base_score": 17.6, "base_band": "Amber", "matched": "GTA0014"}, {"id": "P0101", "desc": "Silicone keypad", "category": "Polymer Housings", "hs": "3926.90", "country": "Japan", "region": "East Asia", "supplier_id": "S045", "supplier": "Kori Technologies", "tier": 3, "unit_cost": 1.93, "volume": 792961, "spend": 1530414.73, "crit": "Medium", "single_source": false, "otd": 99.5, "base_delta": 0.0, "base_after": 1.93, "base_impact": 0.0, "base_score": 11.0, "base_band": "Green", "matched": ""}, {"id": "P0102", "desc": "Silicone keypad", "category": "Polymer Housings", "hs": "3926.90", "country": "Japan", "region": "East Asia", "supplier_id": "S045", "supplier": "Kori Technologies", "tier": 3, "unit_cost": 2.316, "volume": 663399, "spend": 1536432.08, "crit": "Medium", "single_source": false, "otd": 99.5, "base_delta": 0.0, "base_after": 2.316, "base_impact": 0.0, "base_score": 11.0, "base_band": "Green", "matched": ""}, {"id": "P0103", "desc": "Prismatic cell 50Ah", "category": "Li-ion Cells & Batteries", "hs": "8507.60", "country": "Thailand", "region": "SE Asia", "supplier_id": "S008", "supplier": "Hanwa Industries", "tier": 1, "unit_cost": 4.461, "volume": 815496, "spend": 3637927.66, "crit": "Medium", "single_source": false, "otd": 97.0, "base_delta": 0.0, "base_after": 4.461, "base_impact": 0.0, "base_score": 11.2, "base_band": "Green", "matched": ""}, {"id": "P0104", "desc": "USB-C receptacle", "category": "Connectors", "hs": "8536.69", "country": "Malaysia", "region": "SE Asia", "supplier_id": "S007", "supplier": "Hanwa Devices", "tier": 1, "unit_cost": 2.255, "volume": 421110, "spend": 949603.05, "crit": "Medium", "single_source": true, "otd": 99.5, "base_delta": 0.0, "base_after": 2.255, "base_impact": 0.0, "base_score": 25.0, "base_band": "Amber", "matched": ""}, {"id": "P0105", "desc": "MLCC 1206 X7R", "category": "Capacitors", "hs": "8532.24", "country": "Taiwan", "region": "East Asia", "supplier_id": "S024", "supplier": "Halcyon Components", "tier": 1, "unit_cost": 0.057, "volume": 3917970, "spend": 223324.29, "crit": "Low", "single_source": false, "otd": 92.2, "base_delta": 0.0, "base_after": 0.057, "base_impact": 0.0, "base_score": 4.5, "base_band": "Green", "matched": ""}, {"id": "P0106", "desc": "LiPo pouch cell 3000mAh", "category": "Li-ion Cells & Batteries", "hs": "8507.60", "country": "Taiwan", "region": "East Asia", "supplier_id": "S020", "supplier": "Sable Microelectronics", "tier": 1, "unit_cost": 9.949, "volume": 555692, "spend": 5528579.71, "crit": "Low", "single_source": false, "otd": 97.7, "base_delta": 0.0, "base_after": 9.949, "base_impact": 0.0, "base_score": 4.1, "base_band": "Green", "matched": ""}, {"id": "P0107", "desc": "Power blade connector", "category": "Connectors", "hs": "8536.90", "country": "India", "region": "South Asia", "supplier_id": "S038", "supplier": "Ferro Circuit Works", "tier": 2, "unit_cost": 0.705, "volume": 79560, "spend": 56089.8, "crit": "Medium", "single_source": false, "otd": 95.2, "base_delta": 6.7, "base_after": 0.7522, "base_impact": 3755.23, "base_score": 24.4, "base_band": "Amber", "matched": "GTA0020"}, {"id": "P0108", "desc": "ABS enclosure top", "category": "Polymer Housings", "hs": "3926.90", "country": "Vietnam", "region": "SE Asia", "supplier_id": "S025", "supplier": "Orin Microelectronics", "tier": 2, "unit_cost": 1.913, "volume": 312388, "spend": 597598.24, "crit": "Medium", "single_source": false, "otd": 88.6, "base_delta": 0.0, "base_after": 1.913, "base_impact": 0.0, "base_score": 11.7, "base_band": "Green", "matched": ""}, {"id": "P0109", "desc": "Stainless fastener kit", "category": "Steel Hardware", "hs": "7326.90", "country": "South Korea", "region": "East Asia", "supplier_id": "S022", "supplier": "Meishan Circuit Works", "tier": 2, "unit_cost": 0.977, "volume": 659987, "spend": 644807.3, "crit": "Low", "single_source": false, "otd": 98.5, "base_delta": 0.0, "base_after": 0.977, "base_impact": 0.0, "base_score": 4.1, "base_band": "Green", "matched": ""}, {"id": "P0110", "desc": "HDI rigid-flex PCB", "category": "PCB & Laminates", "hs": "8534.00", "country": "Mexico", "region": "North America", "supplier_id": "S046", "supplier": "Kanto Assemblies", "tier": 1, "unit_cost": 4.38, "volume": 322559, "spend": 1412808.42, "crit": "High", "single_source": false, "otd": 87.7, "base_delta": 0.0, "base_after": 4.38, "base_impact": 0.0, "base_score": 20.7, "base_band": "Green", "matched": ""}, {"id": "P0111", "desc": "Ferrite bead", "category": "Resistors & Passives", "hs": "8533.21", "country": "China", "region": "East Asia", "supplier_id": "S012", "supplier": "Terna Systems", "tier": 3, "unit_cost": 0.022, "volume": 2876220, "spend": 63276.84, "crit": "Low", "single_source": false, "otd": 88.5, "base_delta": 15.0, "base_after": 0.0253, "base_impact": 9491.53, "base_score": 19.5, "base_band": "Amber", "matched": "GTA0014"}, {"id": "P0112", "desc": "FFC/FPC connector", "category": "Connectors", "hs": "8536.69", "country": "Mexico", "region": "North America", "supplier_id": "S003", "supplier": "Verda Components", "tier": 1, "unit_cost": 1.293, "volume": 235377, "spend": 304342.46, "crit": "Medium", "single_source": false, "otd": 92.2, "base_delta": 0.0, "base_after": 1.293, "base_impact": 0.0, "base_score": 11.5, "base_band": "Green", "matched": ""}, {"id": "P0113", "desc": "Prismatic cell 50Ah", "category": "Li-ion Cells & Batteries", "hs": "8507.60", "country": "Thailand", "region": "SE Asia", "supplier_id": "S008", "supplier": "Hanwa Industries", "tier": 1, "unit_cost": 6.46, "volume": 139164, "spend": 898999.44, "crit": "Medium", "single_source": false, "otd": 97.0, "base_delta": 0.0, "base_after": 6.46, "base_impact": 0.0, "base_score": 11.2, "base_band": "Green", "matched": ""}, {"id": "P0114", "desc": "Signal amplifier IC", "category": "Semiconductors/ICs", "hs": "8542.31", "country": "Japan", "region": "East Asia", "supplier_id": "S050", "supplier": "Volt Semicon", "tier": 3, "unit_cost": 15.258, "volume": 813444, "spend": 12411528.55, "crit": "High", "single_source": false, "otd": 86.6, "base_delta": 0.0, "base_after": 15.258, "base_impact": 0.0, "base_score": 20.8, "base_band": "Green", "matched": ""}, {"id": "P0115", "desc": "32-bit MCU", "category": "Semiconductors/ICs", "hs": "8542.32", "country": "Japan", "region": "East Asia", "supplier_id": "S050", "supplier": "Volt Semicon", "tier": 3, "unit_cost": 10.976, "volume": 848326, "spend": 9311226.18, "crit": "High", "single_source": false, "otd": 86.6, "base_delta": 0.0, "base_after": 10.976, "base_impact": 0.0, "base_score": 20.8, "base_band": "Green", "matched": ""}, {"id": "P0116", "desc": "Power blade connector", "category": "Connectors", "hs": "8536.69", "country": "Malaysia", "region": "SE Asia", "supplier_id": "S007", "supplier": "Hanwa Devices", "tier": 1, "unit_cost": 0.593, "volume": 764301, "spend": 453230.49, "crit": "Medium", "single_source": true, "otd": 99.5, "base_delta": 0.0, "base_after": 0.593, "base_impact": 0.0, "base_score": 25.0, "base_band": "Amber", "matched": ""}, {"id": "P0117", "desc": "Stainless fastener kit", "category": "Steel Hardware", "hs": "7326.90", "country": "China", "region": "East Asia", "supplier_id": "S011", "supplier": "Doran Precision", "tier": 2, "unit_cost": 0.599, "volume": 242864, "spend": 145475.54, "crit": "Medium", "single_source": false, "otd": 92.5, "base_delta": 0.0, "base_after": 0.599, "base_impact": 0.0, "base_score": 11.4, "base_band": "Green", "matched": ""}, {"id": "P0118", "desc": "8-layer backplane", "category": "PCB & Laminates", "hs": "8534.00", "country": "South Korea", "region": "East Asia", "supplier_id": "S036", "supplier": "Ceyl Technologies", "tier": 1, "unit_cost": 5.336, "volume": 666913, "spend": 3558647.77, "crit": "Low", "single_source": false, "otd": 91.8, "base_delta": 0.0, "base_after": 5.336, "base_impact": 0.0, "base_score": 4.5, "base_band": "Green", "matched": ""}, {"id": "P0119", "desc": "Multi-core control cable", "category": "Insulated Wire & Cable", "hs": "8544.42", "country": "China", "region": "East Asia", "supplier_id": "S026", "supplier": "Kori Microelectronics", "tier": 2, "unit_cost": 1.022, "volume": 57983, "spend": 59258.63, "crit": "Low", "single_source": false, "otd": 91.4, "base_delta": 0.0, "base_after": 1.022, "base_impact": 0.0, "base_score": 4.5, "base_band": "Green", "matched": ""}, {"id": "P0120", "desc": "LiPo pouch cell 3000mAh", "category": "Li-ion Cells & Batteries", "hs": "8507.60", "country": "Thailand", "region": "SE Asia", "supplier_id": "S008", "supplier": "Hanwa Industries", "tier": 1, "unit_cost": 5.807, "volume": 659527, "spend": 3829873.29, "crit": "Medium", "single_source": false, "otd": 97.0, "base_delta": 0.0, "base_after": 5.807, "base_impact": 0.0, "base_score": 11.2, "base_band": "Green", "matched": ""}, {"id": "P0121", "desc": "Aluminium electrolytic 470uF", "category": "Capacitors", "hs": "8532.24", "country": "China", "region": "East Asia", "supplier_id": "S049", "supplier": "Doran Fabrication", "tier": 1, "unit_cost": 0.073, "volume": 1067718, "spend": 77943.41, "crit": "Low", "single_source": true, "otd": 91.0, "base_delta": 15.0, "base_after": 0.0839, "base_impact": 11638.13, "base_score": 34.0, "base_band": "Amber", "matched": "GTA0004"}, {"id": "P0122", "desc": "RF coax connector", "category": "Connectors", "hs": "8536.90", "country": "China", "region": "East Asia", "supplier_id": "S017", "supplier": "Axion Technologies", "tier": 1, "unit_cost": 1.605, "volume": 525390, "spend": 843250.95, "crit": "Low", "single_source": false, "otd": 82.3, "base_delta": 0.0, "base_after": 1.605, "base_impact": 0.0, "base_score": 5.1, "base_band": "Green", "matched": ""}, {"id": "P0123", "desc": "RF coax connector", "category": "Connectors", "hs": "8536.90", "country": "China", "region": "East Asia", "supplier_id": "S032", "supplier": "Kestrel Semicon", "tier": 1, "unit_cost": 0.351, "volume": 238597, "spend": 83747.55, "crit": "High", "single_source": true, "otd": 91.2, "base_delta": 0.0, "base_after": 0.351, "base_impact": 0.0, "base_score": 34.5, "base_band": "Amber", "matched": ""}, {"id": "P0124", "desc": "Motor controller IC", "category": "Semiconductors/ICs", "hs": "8542.31", "country": "Japan", "region": "East Asia", "supplier_id": "S050", "supplier": "Volt Semicon", "tier": 3, "unit_cost": 7.139, "volume": 308995, "spend": 2205915.31, "crit": "High", "single_source": false, "otd": 86.6, "base_delta": 0.0, "base_after": 7.139, "base_impact": 0.0, "base_score": 20.8, "base_band": "Green", "matched": ""}, {"id": "P0125", "desc": "USB-C receptacle", "category": "Connectors", "hs": "8536.90", "country": "China", "region": "East Asia", "supplier_id": "S032", "supplier": "Kestrel Semicon", "tier": 1, "unit_cost": 0.801, "volume": 492179, "spend": 394235.38, "crit": "High", "single_source": true, "otd": 91.2, "base_delta": 0.0, "base_after": 0.801, "base_impact": 0.0, "base_score": 34.5, "base_band": "Amber", "matched": ""}, {"id": "P0126", "desc": "21700 Li-ion cell", "category": "Li-ion Cells & Batteries", "hs": "8507.60", "country": "Thailand", "region": "SE Asia", "supplier_id": "S008", "supplier": "Hanwa Industries", "tier": 1, "unit_cost": 11.64, "volume": 857979, "spend": 9986875.56, "crit": "Medium", "single_source": false, "otd": 97.0, "base_delta": 0.0, "base_after": 11.64, "base_impact": 0.0, "base_score": 11.2, "base_band": "Green", "matched": ""}, {"id": "P0127", "desc": "Stamped steel bracket", "category": "Steel Hardware", "hs": "7326.90", "country": "China", "region": "East Asia", "supplier_id": "S011", "supplier": "Doran Precision", "tier": 2, "unit_cost": 0.394, "volume": 507886, "spend": 200107.08, "crit": "Medium", "single_source": false, "otd": 92.5, "base_delta": 0.0, "base_after": 0.394, "base_impact": 0.0, "base_score": 11.4, "base_band": "Green", "matched": ""}, {"id": "P0128", "desc": "OLED display 1.3in", "category": "Display Modules", "hs": "9013.80", "country": "Taiwan", "region": "East Asia", "supplier_id": "S002", "supplier": "Ceyl Industries", "tier": 1, "unit_cost": 24.455, "volume": 124678, "spend": 3049000.49, "crit": "Medium", "single_source": false, "otd": 95.3, "base_delta": 0.0, "base_after": 24.455, "base_impact": 0.0, "base_score": 11.3, "base_band": "Green", "matched": ""}, {"id": "P0129", "desc": "FFC/FPC connector", "category": "Connectors", "hs": "8536.69", "country": "India", "region": "South Asia", "supplier_id": "S038", "supplier": "Ferro Circuit Works", "tier": 2, "unit_cost": 1.04, "volume": 485195, "spend": 504602.8, "crit": "Medium", "single_source": false, "otd": 95.2, "base_delta": 6.7, "base_after": 1.1097, "base_impact": 33818.09, "base_score": 33.4, "base_band": "Amber", "matched": "GTA0020"}, {"id": "P0130", "desc": "Power management IC", "category": "Semiconductors/ICs", "hs": "8542.32", "country": "Japan", "region": "East Asia", "supplier_id": "S050", "supplier": "Volt Semicon", "tier": 3, "unit_cost": 1.533, "volume": 740110, "spend": 1134588.63, "crit": "High", "single_source": false, "otd": 86.6, "base_delta": 0.0, "base_after": 1.533, "base_impact": 0.0, "base_score": 20.8, "base_band": "Green", "matched": ""}, {"id": "P0131", "desc": "Al front bezel", "category": "Aluminium Enclosures", "hs": "7606.12", "country": "Vietnam", "region": "SE Asia", "supplier_id": "S010", "supplier": "Ceyl Materials", "tier": 2, "unit_cost": 3.076, "volume": 512052, "spend": 1575071.95, "crit": "Low", "single_source": true, "otd": 91.2, "base_delta": 0.0, "base_after": 3.076, "base_impact": 0.0, "base_score": 18.5, "base_band": "Green", "matched": ""}, {"id": "P0132", "desc": "6-layer FR4 PCB", "category": "PCB & Laminates", "hs": "8534.00", "country": "Mexico", "region": "North America", "supplier_id": "S046", "supplier": "Kanto Assemblies", "tier": 1, "unit_cost": 12.891, "volume": 67605, "spend": 871496.06, "crit": "High", "single_source": false, "otd": 87.7, "base_delta": 0.0, "base_after": 12.891, "base_impact": 0.0, "base_score": 20.7, "base_band": "Green", "matched": ""}, {"id": "P0133", "desc": "Prismatic cell 50Ah", "category": "Li-ion Cells & Batteries", "hs": "8507.60", "country": "China", "region": "East Asia", "supplier_id": "S014", "supplier": "Lumen Industries", "tier": 1, "unit_cost": 6.94, "volume": 487303, "spend": 3381882.82, "crit": "Low", "single_source": false, "otd": 94.2, "base_delta": 18.4, "base_after": 8.217, "base_impact": 622285.93, "base_score": 61.3, "base_band": "Red", "matched": "GTA0003"}, {"id": "P0134", "desc": "Touch panel assembly", "category": "Display Modules", "hs": "9013.80", "country": "Taiwan", "region": "East Asia", "supplier_id": "S001", "supplier": "Nexa Technologies", "tier": 1, "unit_cost": 11.119, "volume": 266963, "spend": 2968361.6, "crit": "High", "single_source": false, "otd": 90.6, "base_delta": 0.0, "base_after": 11.119, "base_impact": 0.0, "base_score": 20.6, "base_band": "Green", "matched": ""}, {"id": "P0135", "desc": "OLED display 1.3in", "category": "Display Modules", "hs": "9013.80", "country": "Thailand", "region": "SE Asia", "supplier_id": "S029", "supplier": "Orin Industries", "tier": 1, "unit_cost": 22.384, "volume": 401971, "spend": 8997718.86, "crit": "Medium", "single_source": false, "otd": 99.5, "base_delta": 0.0, "base_after": 22.384, "base_impact": 0.0, "base_score": 11.0, "base_band": "Green", "matched": ""}, {"id": "P0136", "desc": "ABS enclosure top", "category": "Polymer Housings", "hs": "3926.90", "country": "Vietnam", "region": "SE Asia", "supplier_id": "S025", "supplier": "Orin Microelectronics", "tier": 2, "unit_cost": 2.586, "volume": 589942, "spend": 1525590.01, "crit": "Medium", "single_source": false, "otd": 88.6, "base_delta": 0.0, "base_after": 2.586, "base_impact": 0.0, "base_score": 11.7, "base_band": "Green", "matched": ""}, {"id": "P0137", "desc": "OLED display 1.3in", "category": "Display Modules", "hs": "9013.80", "country": "Thailand", "region": "SE Asia", "supplier_id": "S029", "supplier": "Orin Industries", "tier": 1, "unit_cost": 17.901, "volume": 599244, "spend": 10727066.84, "crit": "Medium", "single_source": false, "otd": 99.5, "base_delta": 0.0, "base_after": 17.901, "base_impact": 0.0, "base_score": 11.0, "base_band": "Green", "matched": ""}, {"id": "P0138", "desc": "DC-DC converter IC", "category": "Semiconductors/ICs", "hs": "8542.32", "country": "Japan", "region": "East Asia", "supplier_id": "S050", "supplier": "Volt Semicon", "tier": 3, "unit_cost": 10.655, "volume": 321588, "spend": 3426520.14, "crit": "High", "single_source": false, "otd": 86.6, "base_delta": 0.0, "base_after": 10.655, "base_impact": 0.0, "base_score": 20.8, "base_band": "Green", "matched": ""}, {"id": "P0139", "desc": "MLCC array 0402", "category": "Capacitors", "hs": "8532.21", "country": "China", "region": "East Asia", "supplier_id": "S049", "supplier": "Doran Fabrication", "tier": 1, "unit_cost": 0.03, "volume": 1649418, "spend": 49482.54, "crit": "Low", "single_source": true, "otd": 91.0, "base_delta": 15.0, "base_after": 0.0345, "base_impact": 7422.38, "base_score": 32.8, "base_band": "Amber", "matched": "GTA0004"}, {"id": "P0140", "desc": "Gate driver IC", "category": "Semiconductors/ICs", "hs": "8542.39", "country": "Japan", "region": "East Asia", "supplier_id": "S050", "supplier": "Volt Semicon", "tier": 3, "unit_cost": 7.463, "volume": 487644, "spend": 3639287.17, "crit": "High", "single_source": false, "otd": 86.6, "base_delta": 0.0, "base_after": 7.463, "base_impact": 0.0, "base_score": 20.8, "base_band": "Green", "matched": ""}, {"id": "P0141", "desc": "RF transceiver", "category": "Semiconductors/ICs", "hs": "8542.39", "country": "Japan", "region": "East Asia", "supplier_id": "S050", "supplier": "Volt Semicon", "tier": 3, "unit_cost": 18.333, "volume": 366915, "spend": 6726652.69, "crit": "High", "single_source": false, "otd": 86.6, "base_delta": 0.0, "base_after": 18.333, "base_impact": 0.0, "base_score": 20.8, "base_band": "Green", "matched": ""}, {"id": "P0142", "desc": "Nylon cable gland", "category": "Polymer Housings", "hs": "3926.90", "country": "Japan", "region": "East Asia", "supplier_id": "S045", "supplier": "Kori Technologies", "tier": 3, "unit_cost": 2.019, "volume": 658091, "spend": 1328685.73, "crit": "Medium", "single_source": false, "otd": 99.5, "base_delta": 0.0, "base_after": 2.019, "base_impact": 0.0, "base_score": 11.0, "base_band": "Green", "matched": ""}, {"id": "P0143", "desc": "PBT connector housing", "category": "Polymer Housings", "hs": "3926.90", "country": "Thailand", "region": "SE Asia", "supplier_id": "S041", "supplier": "Lumen Technologies", "tier": 1, "unit_cost": 1.319, "volume": 632940, "spend": 834847.86, "crit": "Medium", "single_source": true, "otd": 94.6, "base_delta": 0.0, "base_after": 1.319, "base_impact": 0.0, "base_score": 25.3, "base_band": "Amber", "matched": ""}, {"id": "P0144", "desc": "Battery pack 4S", "category": "Li-ion Cells & Batteries", "hs": "8507.60", "country": "Thailand", "region": "SE Asia", "supplier_id": "S008", "supplier": "Hanwa Industries", "tier": 1, "unit_cost": 7.705, "volume": 305893, "spend": 2356905.56, "crit": "Medium", "single_source": false, "otd": 97.0, "base_delta": 0.0, "base_after": 7.705, "base_impact": 0.0, "base_score": 11.2, "base_band": "Green", "matched": ""}, {"id": "P0145", "desc": "e-Paper module", "category": "Display Modules", "hs": "9013.80", "country": "South Korea", "region": "East Asia", "supplier_id": "S042", "supplier": "Kanto Precision", "tier": 1, "unit_cost": 26.588, "volume": 800869, "spend": 21293504.97, "crit": "Low", "single_source": false, "otd": 82.7, "base_delta": 0.0, "base_after": 26.588, "base_impact": 0.0, "base_score": 5.0, "base_band": "Green", "matched": ""}, {"id": "P0146", "desc": "HDI rigid-flex PCB", "category": "PCB & Laminates", "hs": "8534.00", "country": "Mexico", "region": "North America", "supplier_id": "S046", "supplier": "Kanto Assemblies", "tier": 1, "unit_cost": 1.836, "volume": 681096, "spend": 1250492.26, "crit": "High", "single_source": false, "otd": 87.7, "base_delta": 0.0, "base_after": 1.836, "base_impact": 0.0, "base_score": 20.7, "base_band": "Green", "matched": ""}, {"id": "P0147", "desc": "LiPo pouch cell 3000mAh", "category": "Li-ion Cells & Batteries", "hs": "8507.60", "country": "Thailand", "region": "SE Asia", "supplier_id": "S008", "supplier": "Hanwa Industries", "tier": 1, "unit_cost": 5.668, "volume": 693985, "spend": 3933506.98, "crit": "Medium", "single_source": false, "otd": 97.0, "base_delta": 0.0, "base_after": 5.668, "base_impact": 0.0, "base_score": 11.2, "base_band": "Green", "matched": ""}, {"id": "P0148", "desc": "5.5in TFT-LCD module", "category": "Display Modules", "hs": "9013.80", "country": "South Korea", "region": "East Asia", "supplier_id": "S042", "supplier": "Kanto Precision", "tier": 1, "unit_cost": 25.766, "volume": 672564, "spend": 17329284.02, "crit": "Low", "single_source": false, "otd": 82.7, "base_delta": 0.0, "base_after": 25.766, "base_impact": 0.0, "base_score": 5.0, "base_band": "Green", "matched": ""}, {"id": "P0149", "desc": "RF coax connector", "category": "Connectors", "hs": "8536.69", "country": "Taiwan", "region": "East Asia", "supplier_id": "S044", "supplier": "Sable Systems", "tier": 1, "unit_cost": 0.303, "volume": 858571, "spend": 260147.01, "crit": "High", "single_source": true, "otd": 95.0, "base_delta": 0.0, "base_after": 0.303, "base_impact": 0.0, "base_score": 34.3, "base_band": "Amber", "matched": ""}, {"id": "P0150", "desc": "6-layer FR4 PCB", "category": "PCB & Laminates", "hs": "8534.00", "country": "Malaysia", "region": "SE Asia", "supplier_id": "S040", "supplier": "Vireo Systems", "tier": 1, "unit_cost": 7.606, "volume": 302032, "spend": 2297255.39, "crit": "Low", "single_source": true, "otd": 87.1, "base_delta": 4.8, "base_after": 7.9711, "base_impact": 110271.88, "base_score": 63.9, "base_band": "Red", "matched": "GTA0028"}]};
+const CC=DATA.totals.cost_cap, CW=DATA.crit_w;
+const DEFAULT_UPLOAD_FILE='demo_supplier_bom.xlsx';
+const DEFAULT_UPLOAD_ROWS=DATA.parts.slice(0,6).map(p=>({
+  part_id:p.id,
+  part_description:p.desc,
+  supplier:p.supplier,
+  country_of_origin:p.country,
+  unit_cost:p.unit_cost,
+  annual_volume:p.volume
+}));
+let scenario=null, selCountry=null, decisions={}, rawUploadedRows=[], uploadedRows=[], uploadMeta=null, uploadInsights=null, autoVoiceReply=false, activeRecognition=null, dragDepth=0, mapProjection=null, mapPath=null, mapFeatures=[];
+
+const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
+const money=v=>{const a=Math.abs(v);return (a>=1e6?'$'+(v/1e6).toFixed(2)+'M':a>=1e3?'$'+(v/1e3).toFixed(0)+'K':'$'+Math.round(v));};
+const clsx=s=>(s||'').replace(/[^A-Za-z]/g,'');
+const clone=v=>JSON.parse(JSON.stringify(v));
+const escapeHtml=t=>String(t??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
+function stripHtml(html){const d=document.createElement('div');d.innerHTML=html;return d.textContent||d.innerText||'';}
+function toNumber(value){
+  if(typeof value==='number' && Number.isFinite(value)) return value;
+  if(value===null || value===undefined || value==='') return null;
+  const normalized=String(value).replace(/[$,%\s]/g,'').replace(/,/g,'');
+  const parsed=Number(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+function speakText(text){
+  if(!window.speechSynthesis || !text) return;
+  const utterance=new SpeechSynthesisUtterance(text);
+  utterance.rate=1;
+  utterance.pitch=1;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(utterance);
+}
+
+function parseCsv(text){
+  const lines=String(text||'').split(/\r?\n/).filter(line=>line.trim());
+  if(!lines.length) return [];
+  const parseLine=line=>{
+    const cells=[]; let cur='', quoted=false;
+    for(let i=0;i<line.length;i++){
+      const ch=line[i];
+      if(ch==='"'){
+        if(quoted && line[i+1]==='"'){cur+='"'; i++; continue;}
+        quoted=!quoted;
+        continue;
+      }
+      if(ch===',' && !quoted){cells.push(cur); cur=''; continue;}
+      cur+=ch;
+    }
+    cells.push(cur);
+    return cells.map(cell=>cell.trim());
+  };
+  const headers=parseLine(lines[0]);
+  return lines.slice(1).map(line=>{
+    const values=parseLine(line);
+    return Object.fromEntries(headers.map((header,index)=>[header||`column_${index+1}`, values[index]??'']));
+  });
+}
+
+function cleanRows(rows){
+  const seen=new Set();
+  return (Array.isArray(rows)?rows:[])
+    .map((row,rowIndex)=>{
+      const cleaned={};
+      let hasValue=false;
+      Object.entries(row||{}).forEach(([key,value],index)=>{
+        const safeKey=String(key||`column_${index+1}`).trim().toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'')||`column_${index+1}`;
+        const safeValue=typeof value==='string' ? value.replace(/\s+/g,' ').trim() : value;
+        if(safeValue!=='' && safeValue!==null && safeValue!==undefined) hasValue=true;
+        cleaned[safeKey]=safeValue;
+      });
+      if(!Object.keys(cleaned).length) cleaned[`column_${rowIndex+1}`]='';
+      return hasValue ? cleaned : null;
+    })
+    .filter(Boolean)
+    .filter(row=>{
+      const sig=JSON.stringify(row);
+      if(seen.has(sig)) return false;
+      seen.add(sig);
+      return true;
+    });
+}
+
+function detectHeader(headers,candidates){
+  return headers.find(header=>candidates.includes(header))
+    || headers.find(header=>candidates.some(candidate=>header.includes(candidate)));
+}
+
+function topValues(rows,header,limit=3){
+  if(!header) return [];
+  const counts={};
+  rows.forEach(row=>{
+    const value=String(row[header]??'').trim();
+    if(!value) return;
+    counts[value]=(counts[value]||0)+1;
+  });
+  return Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,limit);
+}
+
+function analyzeUploadedRows(rows){
+  const safeRows=Array.isArray(rows)?rows:[];
+  const headers=Object.keys(safeRows[0]||{});
+  const totalCells=Math.max(headers.length*safeRows.length,1);
+  let filledCells=0;
+  safeRows.forEach(row=>headers.forEach(header=>{
+    const value=row[header];
+    if(value!=='' && value!==null && value!==undefined) filledCells++;
+  }));
+  const completeness=safeRows.length ? Math.round(100*filledCells/totalCells) : 0;
+  const supplierHeader=detectHeader(headers,['supplier','supplier_name','vendor','vendor_name','manufacturer']);
+  const countryHeader=detectHeader(headers,['country_of_origin','country','origin_country','origin']);
+  const unitCostHeader=detectHeader(headers,['unit_cost','unit_price','price','cost']);
+  const volumeHeader=detectHeader(headers,['annual_volume','volume','qty','quantity','annual_demand','demand']);
+  const spendHeader=detectHeader(headers,['annual_spend','total_spend','spend','extended_cost','amount','value']);
+  let estimatedSpend=0, spendRows=0;
+  safeRows.forEach(row=>{
+    let value=spendHeader ? toNumber(row[spendHeader]) : null;
+    if(value===null && unitCostHeader && volumeHeader){
+      const unit=toNumber(row[unitCostHeader]), volume=toNumber(row[volumeHeader]);
+      if(unit!==null && volume!==null) value=unit*volume;
+    }
+    if(value!==null){
+      estimatedSpend+=value;
+      spendRows++;
+    }
+  });
+  return {
+    headers,
+    completeness,
+    supplierHeader,
+    countryHeader,
+    unitCostHeader,
+    volumeHeader,
+    spendHeader,
+    spendRows,
+    estimatedSpend:spendRows ? estimatedSpend : null,
+    topSuppliers:topValues(safeRows,supplierHeader),
+    topCountries:topValues(safeRows,countryHeader)
+  };
+}
+
+function setUploadStatus(message,tone='info'){
+  const status=$('#uploadStatus');
+  if(!status) return;
+  status.className=`uploadstatus ${tone}`;
+  status.textContent=message;
+}
+
+function syncUploadSurfaceFromMeta(){
+  if(!uploadMeta){
+    setUploadStatus('Use Upload workbook or drop a CSV, XLS, or XLSX file into this panel to start the intake.', 'info');
+    return;
+  }
+  const lead=uploadMeta.fileName===DEFAULT_UPLOAD_FILE ? 'Sample workbook loaded.' : `Latest upload: ${uploadMeta.fileName}.`;
+  const tail=uploadedRows.length
+    ? `${uploadMeta.cleanedRows} clean rows are ready for preview and export.`
+    : 'No usable rows were found in that file.';
+  setUploadStatus(`${lead} ${tail}`, uploadedRows.length?'ok':'warn');
+}
+
+function focusPreview(){
+  const preview=document.querySelector('.uploadpreview');
+  if(!preview) return;
+  preview.classList.add('focused');
+  preview.scrollIntoView({behavior:'smooth',block:'center'});
+  setTimeout(()=>preview.classList.remove('focused'),1400);
+}
+
+function openFilePicker(){
+  const input=$('#sheetUpload');
+  if(input) input.click();
+}
+
+function loadSampleIntake(opts={}){
+  runAutoClean(DEFAULT_UPLOAD_ROWS,DEFAULT_UPLOAD_FILE);
+  if(uploadMeta) uploadMeta.status='Sample intake loaded. Upload any CSV or Excel file here and it will auto-clean instantly.';
+  renderUploadPreview();
+  syncUploadSurfaceFromMeta();
+  if(opts.announce) addBubble('a','The demo sample sheet is loaded again. You can replace it with any CSV, XLS, or XLSX workbook.');
+}
+
+function runAutoClean(rows,fileName){
+  const raw=Array.isArray(rows)?clone(rows):[];
+  const cleaned=cleanRows(raw);
+  const insights=analyzeUploadedRows(cleaned.length?cleaned:raw);
+  const cleanRate=raw.length ? Math.round(100*cleaned.length/raw.length) : 100;
+  const qualityScore=cleaned.length
+    ? Math.max(55,Math.min(99,Math.round(insights.completeness*.62 + cleanRate*.38)))
+    : 0;
+  rawUploadedRows=raw;
+  uploadedRows=cleaned;
+  uploadInsights=insights;
+  uploadMeta={
+    fileName,
+    rawRows:raw.length,
+    cleanedRows:cleaned.length,
+    removedRows:Math.max(0,raw.length-cleaned.length),
+    normalizedColumns:Object.keys(cleaned[0]||raw[0]||{}).length,
+    cleanRate,
+    qualityScore,
+    estimatedSpend:insights.estimatedSpend,
+    topSupplier:insights.topSuppliers[0] ? insights.topSuppliers[0][0] : '',
+    topCountry:insights.topCountries[0] ? insights.topCountries[0][0] : '',
+    status:cleaned.length?'Ready for preview, chat questions, and CSV download.':'No usable rows found in this file.'
+  };
+}
+
+function renderUploadPreview(){
+  const host=$('#uploadMeta'), table=$('#uploadPreviewTable');
+  if(host && uploadMeta){
+    const pills=[
+      uploadMeta.qualityScore ? `<span class="uploadpill">Quality score <b>${uploadMeta.qualityScore}%</b></span>` : '',
+      uploadMeta.topSupplier ? `<span class="uploadpill">Top supplier <b>${escapeHtml(uploadMeta.topSupplier)}</b></span>` : '',
+      uploadMeta.topCountry ? `<span class="uploadpill">Top country <b>${escapeHtml(uploadMeta.topCountry)}</b></span>` : '',
+      uploadMeta.estimatedSpend!==null ? `<span class="uploadpill">Spend signal <b>${money(uploadMeta.estimatedSpend)}</b></span>` : ''
+    ].filter(Boolean).join('');
+    const asks=uploadedRows.length ? `
+      <div class="uploadasks">
+        <button class="uploadask" data-q="Summarize my uploaded sheet" type="button">Summarize this sheet</button>
+        <button class="uploadask" data-q="Show supplier concentration in my uploaded sheet" type="button">Supplier concentration</button>
+        <button class="uploadask" data-q="Show country mix in my uploaded sheet" type="button">Country mix</button>
+      </div>` : '';
+    host.innerHTML=`
+      <div class="uploadstats">
+        <div class="uploadstat file"><div class="lbl">Source file</div><div class="num">${escapeHtml(uploadMeta.fileName)}</div></div>
+        <div class="uploadstat"><div class="lbl">Raw rows</div><div class="num">${uploadMeta.rawRows}</div></div>
+        <div class="uploadstat"><div class="lbl">Clean rows</div><div class="num">${uploadMeta.cleanedRows}</div></div>
+        <div class="uploadstat"><div class="lbl">Removed</div><div class="num">${uploadMeta.removedRows}</div></div>
+        <div class="uploadstat"><div class="lbl">Quality</div><div class="num">${uploadMeta.qualityScore?`${uploadMeta.qualityScore}%`:'--'}</div></div>
+      </div>
+      <div class="uploadmsg">${escapeHtml(uploadMeta.status)} Columns normalized: <b>${uploadMeta.normalizedColumns}</b>. Clean retention: <b>${uploadMeta.cleanRate}%</b>.</div>
+      ${pills?`<div class="uploadsignals">${pills}</div>`:''}
+      ${asks}`;
+    $$('#uploadMeta .uploadask').forEach(btn=>btn.addEventListener('click',()=>{
+      $('#tabAsst').click();
+      $('#ask').value=btn.dataset.q;
+      sendAsk();
+    }));
+  }
+  if(!table) return;
+  if(!uploadedRows.length){
+    table.innerHTML='<tbody><tr><td class="previewempty">No usable rows yet. Use Upload workbook or drag a CSV, XLS, or XLSX file into this panel to preview the cleaned result.</td></tr></tbody>';
+    return;
+  }
+  const headers=Object.keys(uploadedRows[0]).slice(0,6);
+  table.innerHTML=`
+    <thead><tr>${headers.map(h=>`<th>${escapeHtml(h)}</th>`).join('')}</tr></thead>
+    <tbody>${uploadedRows.slice(0,6).map(row=>`<tr>${headers.map(h=>`<td>${escapeHtml(row[h]??'')}</td>`).join('')}</tr>`).join('')}</tbody>`;
+}
+
+async function processUploadFile(file){
+  if(!file) return false;
+  try{
+    setUploadStatus(`Processing ${file.name}...`, 'info');
+    const ext=(file.name.split('.').pop()||'').toLowerCase();
+    if(ext==='csv'){
+      runAutoClean(parseCsv(await file.text()), file.name);
+    }else if(ext==='xlsx' || ext==='xls'){
+      if(!window.XLSX){
+        $('#voiceStatus').textContent='Excel parsing library is not available in this browser session.';
+        setUploadStatus('The Excel parser is not available in this browser session.', 'warn');
+        addBubble('a','The Excel parser is not available right now, so I can only auto-clean CSV files in this session.');
+        return false;
+      }
+      const buffer=await file.arrayBuffer();
+      const workbook=XLSX.read(buffer,{type:'array'});
+      const firstSheet=workbook.SheetNames[0];
+      runAutoClean(XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet],{defval:''}), file.name);
+    }else{
+      setUploadStatus('Unsupported format. Upload a CSV, XLS, or XLSX file.', 'warn');
+      addBubble('a','Upload a CSV, XLS, or XLSX file and I will auto-clean it immediately.');
+      return false;
+    }
+    renderUploadPreview();
+    syncUploadSurfaceFromMeta();
+    addBubble('a',`Uploaded <b>${escapeHtml(file.name)}</b>. I auto-cleaned it into <b>${uploadMeta.cleanedRows}</b> usable rows, removed <b>${uploadMeta.removedRows}</b> blank or duplicate rows, and scored the intake at <b>${uploadMeta.qualityScore}%</b> quality.`);
+    return true;
+  }catch(err){
+    console.error(err);
+    setUploadStatus('I could not read that file. Try a CSV, XLS, or XLSX workbook.', 'warn');
+    addBubble('a','I could not read that file. Try a CSV, XLS, or XLSX workbook.');
+    return false;
+  }
+}
+
+async function handleUpload(event){
+  const file=event.target.files && event.target.files[0];
+  if(!file) return;
+  await processUploadFile(file);
+  event.target.value='';
+}
+
+function bindUploadSurface(){
+  const box=$('#uploadBox');
+  if(!box) return;
+  box.addEventListener('dragenter',event=>{
+    event.preventDefault();
+    dragDepth++;
+    box.classList.add('dragover');
+    setUploadStatus('Drop the file into this panel to auto-clean it instantly.', 'info');
+  });
+  box.addEventListener('dragover',event=>{
+    event.preventDefault();
+  });
+  box.addEventListener('dragleave',event=>{
+    event.preventDefault();
+    dragDepth=Math.max(0,dragDepth-1);
+    if(!dragDepth){
+      box.classList.remove('dragover');
+      syncUploadSurfaceFromMeta();
+    }
+  });
+  box.addEventListener('drop',async event=>{
+    event.preventDefault();
+    dragDepth=0;
+    box.classList.remove('dragover');
+    const file=event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
+    if(file) await processUploadFile(file);
+    else syncUploadSurfaceFromMeta();
+  });
+}
+
+function handleIntakeAction(action){
+  if(action==='pick') return openFilePicker();
+  if(action==='sample') return loadSampleIntake({announce:true});
+  if(action==='preview') return focusPreview();
+  if(action==='download') return downloadCleanedCsv();
+}
+
+function downloadCleanedCsv(){
+  if(!uploadedRows.length){
+    setUploadStatus('Upload or load a sheet first, then export the cleaned CSV.', 'warn');
+    addBubble('a','Upload or load a sheet first, then download the cleaned CSV.');
+    return;
+  }
+  const headers=Object.keys(uploadedRows[0]);
+  const lines=[headers.join(','), ...uploadedRows.map(row=>headers.map(header=>JSON.stringify(row[header]??'')).join(','))];
+  const blob=new Blob([lines.join('\n')],{type:'text/csv;charset=utf-8;'});
+  const link=document.createElement('a');
+  link.href=URL.createObjectURL(blob);
+  link.download='straive_demo_cleaned_sheet.csv';
+  document.body.appendChild(link);
+  link.click();
+  setUploadStatus('Cleaned CSV downloaded. The normalized export is ready for downstream use.', 'ok');
+  setTimeout(()=>{
+    URL.revokeObjectURL(link.href);
+    link.remove();
+  },0);
+}
+
+function updateVoiceReplyUI(){
+  const label=autoVoiceReply?'Voice reply on':'Voice reply off';
+  ['#voiceReplyBtn','#voiceReplyComposerBtn'].forEach(sel=>{
+    const btn=$(sel);
+    if(!btn) return;
+    btn.textContent=label;
+    btn.classList.toggle('active',autoVoiceReply);
+  });
+}
+
+function toggleVoiceReply(){
+  autoVoiceReply=!autoVoiceReply;
+  updateVoiceReplyUI();
+  $('#voiceStatus').textContent=autoVoiceReply
+    ? 'Voice reply is on. Typed and spoken prompts will both be answered aloud.'
+    : 'Voice reply is off for typed prompts. Spoken prompts still get spoken answers.';
+}
+
+function startVoiceCapture(){
+  const Recognition=window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!Recognition){
+    $('#voiceStatus').textContent='Voice input is not supported in this browser.';
+    return;
+  }
+  if(activeRecognition){
+    activeRecognition.stop();
+    activeRecognition=null;
+  }
+  const recognition=new Recognition();
+  activeRecognition=recognition;
+  recognition.lang='en-US';
+  recognition.interimResults=false;
+  recognition.maxAlternatives=1;
+  $('#voiceStatus').textContent='Listening... ask a question about risk, sourcing, or your uploaded sheet.';
+  ['#voiceBtn','#voiceAskBtn'].forEach(sel=>{const btn=$(sel); if(btn) btn.textContent='Listening...';});
+  recognition.onresult=event=>{
+    const text=event.results[0][0].transcript;
+    $('#voiceStatus').textContent=`Heard: ${text}`;
+    $('#ask').value=text;
+    sendAsk({text,fromVoice:true});
+  };
+  recognition.onerror=()=>{
+    $('#voiceStatus').textContent='Voice input failed. Try again or type your question.';
+  };
+  recognition.onend=()=>{
+    activeRecognition=null;
+    $('#voiceBtn').textContent='Voice input';
+    $('#voiceAskBtn').textContent='Speak';
+  };
+  recognition.start();
+}
+
+function calc(p){
+  let d=p.base_delta;
+  if(scenario && p.country===scenario.country && (!scenario.category||p.category===scenario.category)) d+=scenario.delta;
+  const after=p.unit_cost*(1+d/100), impact=(after-p.unit_cost)*p.volume;
+  let s=45*Math.min(Math.max(impact,0)/CC,1)+(d>0?12:0)+CW[p.crit]+(p.single_source?14:0)+6*(1-p.otd/100);
+  s=Math.min(Math.round(s*10)/10,100);
+  let band=s>=50?'Red':s>=25?'Amber':'Green'; if(d>0&&band==='Green')band='Amber';
+  return {delta:d,after,impact,band};
+}
+const view=()=>DATA.parts.map(p=>({...p,...calc(p)}));
+
+/* ---- geo ---- */
+const COORD={China:[35,105],Taiwan:[23.7,121],'South Korea':[36.5,127.8],Japan:[36,138],
+  Vietnam:[16,108],Malaysia:[4.2,102],Thailand:[15,101],Mexico:[23,-102],Germany:[51,10],
+  USA:[39,-98],India:[22,79],Philippines:[13,122]};
+const LABEL_POS={China:{dx:-204,dy:-90},Taiwan:{dx:-182,dy:-6},'South Korea':{dx:-182,dy:-42},Japan:{dx:-182,dy:-80},
+  Vietnam:{dx:18,dy:18},Malaysia:{dx:18,dy:56},Thailand:{dx:-174,dy:44},Mexico:{dx:18,dy:28},Germany:{dx:18,dy:-46},
+  USA:{dx:20,dy:-64},India:{dx:-158,dy:-18},Philippines:{dx:-170,dy:12}};
+const MAP_NAME_ALIASES={'United States':'USA','United States of America':'USA','Korea, Republic of':'South Korea','Republic of Korea':'South Korea'};
+const MAP_BACKDROP_LABELS=[
+  {text:'North America',lat:54,lon:-112},
+  {text:'South America',lat:-24,lon:-61},
+  {text:'Europe',lat:56,lon:18},
+  {text:'Africa',lat:6,lon:20},
+  {text:'Asia',lat:47,lon:88},
+  {text:'Australia',lat:-28,lon:134}
+];
+const PLANT=[34,-96];
+const W=680,H=360;
+const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
+
+function mapCountryName(raw){
+  return MAP_NAME_ALIASES[raw] || raw;
+}
+
+function ensureMapScene(){
+  if(mapProjection && mapPath && mapFeatures.length) return true;
+  if(!window.d3 || !window.WORLD_GEOJSON || !Array.isArray(window.WORLD_GEOJSON.features)) return false;
+  mapFeatures=window.WORLD_GEOJSON.features;
+  mapProjection=d3.geoEquirectangular().fitExtent([[18,18],[W-18,H-18]], window.WORLD_GEOJSON);
+  mapPath=d3.geoPath(mapProjection);
+  return true;
+}
+
+function projectPoint(lat,lon){
+  if(mapProjection) return mapProjection([lon,lat]);
+  return [(lon+180)/360*W,(90-lat)/180*H];
+}
+
+function mapClassForAgg(a){
+  if(!a) return 'idle';
+  if(a.red) return 'exposed';
+  if(a.amber || a.hit) return 'watch';
+  return 'sourced';
+}
+
+function mapColorForAgg(a){
+  if(!a) return '#eaf3f7';
+  if(a.red) return '#d9564a';
+  if(a.amber || a.hit) return '#d39a3b';
+  return '#7fc6bf';
+}
+
+function renderMapFallback(){
+  $('#map').innerHTML=`<rect x="0" y="0" width="${W}" height="${H}" fill="#e6f1f6"/><text class="maptext" x="${W/2}" y="${H/2}" text-anchor="middle">World map unavailable in this browser session.</text>`;
+}
+
+function countryAgg(v){
+  const m={};
+  v.forEach(p=>{const c=m[p.country]||(m[p.country]={spend:0,impact:0,red:0,amber:0,hit:0,parts:[]});
+    c.spend+=p.spend;c.impact+=p.impact;if(p.band==='Red')c.red++;if(p.band==='Amber')c.amber++;if(p.delta>0)c.hit++;c.parts.push(p);});
+  return m;
+}
+function renderMap(){
+  const v=view(), agg=countryAgg(v);
+  if(!ensureMapScene()){
+    renderMapFallback();
+    return;
+  }
+  const spends=Object.values(agg).map(a=>a.spend), maxSp=Math.max(...spends,1);
+  const [cx,cy]=projectPoint(PLANT[0],PLANT[1]);
+  const defs=`<defs>
+    <linearGradient id="oceanGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a7d3e7"/>
+      <stop offset="52%" stop-color="#8ebfd6"/>
+      <stop offset="100%" stop-color="#79aec8"/>
+    </linearGradient>
+  </defs>`;
+  const graticule=mapPath(d3.geoGraticule10());
+  const countries=`<g>${mapFeatures.map(feature=>{
+    const rawName=(feature.properties&&(
+      feature.properties.name||
+      feature.properties.ADMIN||
+      feature.properties.admin||
+      feature.properties.NAME
+    ))||'';
+    const c=mapCountryName(rawName);
+    const a=agg[c];
+    const cls=mapClassForAgg(a);
+    const interactive=Boolean(COORD[c]);
+    const metric=a ? (a.impact>0 ? `At risk ${money(a.impact)}` : `Spend ${money(a.spend)}`) : rawName;
+    return `<path class="countryshape ${cls}${interactive?' interactive':''}" d="${mapPath(feature)}" ${interactive?`data-c="${c}"`:''}>
+      <title>${escapeHtml(`${c} - ${metric}`)}</title>
+    </path>`;
+  }).join('')}</g>`;
+  const backdropLabels=`<g>${MAP_BACKDROP_LABELS.map(label=>{
+    const point=projectPoint(label.lat,label.lon);
+    return `<text class="maptext" x="${point[0]}" y="${point[1]}" text-anchor="middle">${label.text.toUpperCase()}</text>`;
+  }).join('')}</g>`;
+  let arcs='';
+  Object.entries(agg).forEach(([c,a])=>{
+    if(c==='USA' || !COORD[c] || (!a.hit && !a.red && !a.amber)) return;
+    const [x,y]=projectPoint(COORD[c][0],COORD[c][1]);
+    const mx=(x+cx)/2;
+    const my=Math.min(y,cy)-Math.max(26,Math.abs(x-cx)*0.08);
+    arcs+=`<path class="arc" d="M${x.toFixed(1)} ${y.toFixed(1)} Q${mx.toFixed(1)} ${my.toFixed(1)} ${cx.toFixed(1)} ${cy.toFixed(1)}"/>`;
+  });
+  let nodes='', labels='';
+  Object.entries(agg).forEach(([c,a])=>{
+    if(!COORD[c]) return;
+    const [x,y]=projectPoint(COORD[c][0],COORD[c][1]);
+    const r=8+14*Math.sqrt(a.spend/maxSp);
+    const band=a.red?'red':(a.amber||a.hit)?'amber':'clear';
+    const col=mapColorForAgg(a);
+    const metricLabel=a.impact>0?'At risk':'Spend';
+    const metricValue=a.impact>0?money(a.impact):money(a.spend);
+    const metricText=`${metricLabel} ${metricValue}`;
+    const pos=LABEL_POS[c]||{dx:18,dy:-24};
+    const side=pos.dx<0?'left':'right';
+    const boxW=Math.max(98,Math.round(Math.max(c.length*6.3,metricText.length*6)+24));
+    const boxH=38;
+    let bx=side==='left' ? x+pos.dx-boxW : x+pos.dx;
+    let by=y+pos.dy;
+    bx=clamp(bx,8,W-boxW-8);
+    by=clamp(by,8,H-boxH-8);
+    const lineX=side==='left' ? bx+boxW : bx;
+    const textX=side==='left' ? bx+boxW-10 : bx+10;
+    const anchor=side==='left' ? 'end' : 'start';
+    labels+=`<g class="callout" aria-hidden="true">
+      <path class="labelline" d="M${x} ${y} L${lineX} ${by+boxH/2}" stroke="${col}"/>
+      <rect class="labelbox" x="${bx}" y="${by}" width="${boxW}" height="${boxH}" rx="11"/>
+      <text class="labelcountry" x="${textX}" y="${by+15}" text-anchor="${anchor}">${escapeHtml(c)}</text>
+      <text class="labelmetric" x="${textX}" y="${by+28}" text-anchor="${anchor}" style="fill:${col}">${metricText}</text>
+    </g>`;
+    nodes+=`<g class="cnode ${band}" data-c="${c}">
+      <circle class="halo" cx="${x}" cy="${y}" r="12" fill="${col}"/>
+      <circle class="core" cx="${x}" cy="${y}" r="${r}" fill="${col}" fill-opacity=".9" stroke="#fff" stroke-width="1.6"/>
+    </g>`;
+  });
+  const plant=`<g><path class="plant" d="M${cx} ${cy-11} L${cx+10} ${cy} L${cx} ${cy+11} L${cx-10} ${cy} Z" stroke="#fff" stroke-width="1.5"/>
+    <text class="clabel" x="${cx}" y="${cy+24}" text-anchor="middle" style="fill:#6d5bd0;font-weight:700">Your plant</text></g>`;
+  $('#map').innerHTML=`${defs}<rect class="ocean" x="0" y="0" width="${W}" height="${H}"/><path class="grat" d="${graticule}"/>${countries}${backdropLabels}${arcs}${labels}${nodes}${plant}`;
+  $$('#map .countryshape.interactive').forEach(n=>n.addEventListener('click',()=>openCountry(n.dataset.c)));
+  $$('#map .cnode').forEach(n=>n.addEventListener('click',()=>openCountry(n.dataset.c)));
+}
+
+/* ---- country drill-in ---- */
+const catOrig={};
+DATA.parts.forEach(p=>{(catOrig[p.category]??={});const o=(catOrig[p.category][p.country]??={n:0,d:0,hit:0});o.n++;if(p.base_delta>0){o.d+=p.base_delta;o.hit++;}});
+const avgDelta=(cat,c)=>{const o=catOrig[cat]&&catOrig[cat][c];return o&&o.hit?o.d/o.hit:0;};
+const premium=c=>c==='USA'?0.08:c==='Mexico'?0.05:0.04;
+
+function alternatives(p){
+  const origins=new Set(Object.keys(catOrig[p.category]||{})); origins.add('USA');
+  const cur=p.after*p.volume; const cands=[];
+  origins.forEach(c=>{ if(c===p.country)return; const d=avgDelta(p.category,c),pr=premium(c);
+    const unit=p.unit_cost*(1+d/100)*(1+pr); cands.push({country:c==='USA'?'USA (domestic)':c,unit,annual:unit*p.volume,d,save:cur-unit*p.volume}); });
+  cands.sort((a,b)=>b.save-a.save);
+  return {cur,cands:cands.slice(0,3)};
+}
+function partDecision(p){
+  const {cur,cands}=alternatives(p);
+  const best=cands[0];
+  const rows=cands.map((c,i)=>`
+    <div class="alt ${i===0&&c.save>0?'best':''}">
+      <div class="ac">${c.country}${i===0&&c.save>0?'<span class="rec">recommended</span>':''}
+        <div class="faint mono" style="font-size:11px">${c.d>0?'+'+c.d.toFixed(0)+'% tariff':'no tariff'} · +${(premium(c.country.includes('USA')?'USA':c.country)*100).toFixed(0)}% switch cost</div></div>
+      <div class="am">$${c.unit.toFixed(3)}/unit<br>${money(c.annual)}/yr</div>
+      <div class="save ${c.save>0?'up':'down'}">${c.save>0?'save ':'+'}${money(Math.abs(c.save))}</div>
+    </div>`).join('');
+  const dcs=decisions[p.id];
+  const rec = best&&best.save>0
+    ? `Re-source to <b>${best.country}</b> to save ${money(best.save)}/yr, or add it as a second source to de-risk.`
+    : `No cheaper origin — add a second source and file for a tariff exclusion on HS ${p.hs}.`;
+  return `<div class="dhelp">
+    <div class="dh">Sourcing options — current: ${p.country}, ${money(cur)}/yr landed</div>
+    ${rows}
+    <div style="font-size:12.5px;margin-top:10px" class="muted">${rec}</div>
+    ${dcs? `<div class="logged">✓ Decision logged: ${dcs}</div>`
+      : `<div class="actions">
+          <button class="abtn prim" data-act="Re-source" data-id="${p.id}">Re-source</button>
+          <button class="abtn" data-act="Second-source" data-id="${p.id}">Add second source</button>
+          <button class="abtn" data-act="File exclusion" data-id="${p.id}">File exclusion</button>
+          <button class="abtn" data-act="Accept & monitor" data-id="${p.id}">Accept &amp; monitor</button>
+        </div>`}
+  </div>`;
+}
+function openCountry(c){
+  selCountry=c; $('#mapView').style.display='none'; $('#cview').classList.add('on');
+  $('#backBtn').style.display='inline-block'; $('#stageTitle').textContent='Sourcing from '+c;
+  const v=view().filter(p=>p.country===c);
+  const imp=v.reduce((a,p)=>a+p.impact,0), spend=v.reduce((a,p)=>a+p.spend,0);
+  const red=v.filter(p=>p.band==='Red').length, ss=v.filter(p=>p.single_source&&p.impact>0).length;
+  const parts=[...v].sort((a,b)=>b.impact-a.impact);
+  $('#cview').innerHTML=`
+    <div class="chead"><div class="flag">${c.slice(0,2).toUpperCase()}</div>
+      <div><h2>${c}</h2><div class="csub">${v.length} parts sourced · ${red} need action</div></div></div>
+    <div class="cstats">
+      <div class="cstat red"><div class="cn">${money(imp)}</div><div class="cl">annual tariff cost</div></div>
+      <div class="cstat"><div class="cn">${money(spend)}</div><div class="cl">spend from ${c}</div></div>
+      <div class="cstat"><div class="cn">${ss}</div><div class="cl">single-source</div></div>
+    </div>
+    <div class="partlist">${parts.map(p=>`
+      <div class="part" data-id="${p.id}">
+        <div class="parthead"><span class="chev">▶</span>
+          <span class="pnm">${p.desc}</span>
+          <span class="pm"><span>HS <b>${p.hs}</b></span><span>tariff <b>${p.delta>0?'+'+p.delta.toFixed(0)+'%':'—'}</b></span>
+            <span>impact <b>${p.impact>0?money(p.impact):'—'}</b></span>${p.single_source?'<span class="faint">single-source</span>':''}</span>
+          <span class="band ${p.band}">${p.band}</span></div>
+        <div class="decision">${partDecision(p)}</div>
+      </div>`).join('')}</div>`;
+  bindCountry();
+}
+function bindCountry(){
+  $$('#cview .parthead').forEach(h=>h.onclick=()=>h.parentElement.classList.toggle('open'));
+  $$('#cview .abtn').forEach(b=>b.onclick=e=>{e.stopPropagation();decisions[b.dataset.id]=b.dataset.act;
+    openCountry(selCountry); const el=[...$$('#cview .part')].find(x=>x.dataset.id===b.dataset.id); if(el)el.classList.add('open');
+    renderRibbon(); });
+}
+$('#backBtn').onclick=()=>{ $('#cview').classList.remove('on'); $('#mapView').style.display='block';
+  $('#backBtn').style.display='none'; $('#stageTitle').textContent='Global sourcing map'; selCountry=null; };
+
+/* ---- ribbon ---- */
+function renderRibbon(){
+  const v=view();
+  const imp=v.reduce((a,p)=>a+p.impact,0), spend=v.reduce((a,p)=>a+p.spend,0);
+  const atrisk=v.filter(p=>p.band!=='Green').reduce((a,p)=>a+p.spend,0);
+  const need=v.filter(p=>p.band==='Red').length;
+  const done=Object.keys(decisions).length;
+  $('#ribbon').innerHTML=`
+    <div class="kpi red"><span class="lbl">Annual tariff cost</span><span class="val">${money(imp)}</span><span class="sub">on inbound parts</span></div>
+    <div class="kpi amber"><span class="lbl">At-risk spend</span><span class="val">${(100*atrisk/spend).toFixed(1)}%</span><span class="sub">${money(atrisk)} exposed</span></div>
+    <div class="kpi"><span class="lbl">Parts needing action</span><span class="val">${need}</span><span class="sub">Red band</span></div>
+    <div class="kpi plum"><span class="lbl">Decisions logged</span><span class="val">${done}</span><span class="sub">of ${need} priorities</span></div>`;
+}
+
+/* ---- insights ---- */
+function renderInsights(){
+  const v=view(), tot=v.reduce((a,p)=>a+p.impact,0);
+  const byC={}; v.forEach(p=>{if(p.impact>0)byC[p.country]=(byC[p.country]||0)+p.impact;});
+  const topC=Object.entries(byC).sort((a,b)=>b[1]-a[1])[0];
+  const byCat={}; v.forEach(p=>{byCat[p.category]=(byCat[p.category]||0)+p.impact;});
+  const topCat=Object.entries(byCat).sort((a,b)=>b[1]-a[1])[0];
+  const ss=v.filter(p=>p.single_source&&p.impact>0).length;
+  const top=[...v].sort((a,b)=>b.impact-a.impact)[0];
+  const watch=DATA.alerts.filter(a=>a.status==='Announced'||a.status==='Under review').length;
+  const ins=[
+    topC?`${topC[0]} drives ${money(topC[1])} of your ${money(tot)} tariff cost — your top country to de-risk.`:'',
+    topCat?`${topCat[0]} is the most exposed category at ${money(topCat[1])}.`:'',
+    `${ss} tariff-hit parts are single-sourced — no fallback if a measure escalates.`,
+    top&&top.impact>0?`One part, ${top.desc} from ${top.country}, costs ${money(top.impact)}/yr alone.`:'',
+    `${watch} measures are Announced or Under review — ask the assistant to model them.`,
+  ].filter(Boolean);
+  $('#insPane').innerHTML=ins.map((t,i)=>`<div class="insight"><span class="in">${i+1}</span><span>${t}</span></div>`).join('');
+}
+
+/* ---- assistant ---- */
+const CHIPS=["Where's my biggest risk?","Show single-source parts","What if Japan chips get a 20% tariff?","Summarize my uploaded sheet","Show supplier concentration","Show country mix"];
+function addBubble(who,html,opts={}){
+  const b=document.createElement('div');
+  b.className='bubble '+who;
+  b.innerHTML=html;
+  $('#chat').appendChild(b);
+  $('#chat').scrollTop=1e9;
+  if(who==='a' && (opts.speak || autoVoiceReply)) speakText(stripHtml(html));
+}
+function renderChips(){$('#chips').innerHTML=CHIPS.map(c=>`<button class="chip">${c}</button>`).join('');
+  $$('#chips .chip').forEach(c=>c.onclick=()=>{ $('#ask').value=c.textContent; sendAsk(); });}
+function uploadSummaryText(){
+  if(!uploadMeta){
+    return `Use the intake card at the top to upload a CSV, XLS, or XLSX file. I will auto-clean it, preview the cleaned rows, and let you download a cleaned CSV.`;
+  }
+  const lines=[
+    `Your latest sheet is <b>${escapeHtml(uploadMeta.fileName)}</b>.`,
+    `I auto-cleaned it to <b>${uploadMeta.cleanedRows}</b> usable rows, removed <b>${uploadMeta.removedRows}</b> blank or duplicate rows, and normalized <b>${uploadMeta.normalizedColumns}</b> columns.`,
+    uploadMeta.qualityScore ? `The intake quality score is <b>${uploadMeta.qualityScore}%</b>.` : ''
+  ];
+  if(uploadMeta.estimatedSpend!==null) lines.push(`Detected spend signal is <b>${money(uploadMeta.estimatedSpend)}</b>.`);
+  if(uploadInsights && uploadInsights.topSuppliers[0]) lines.push(`Top supplier by row count is <b>${escapeHtml(uploadInsights.topSuppliers[0][0])}</b>.`);
+  if(uploadInsights && uploadInsights.topCountries[0]) lines.push(`Top country in the sheet is <b>${escapeHtml(uploadInsights.topCountries[0][0])}</b>.`);
+  return lines.filter(Boolean).join(' ');
+}
+function answer(q){
+  const v=view(), ql=q.toLowerCase();
+  const tot=v.reduce((a,p)=>a+p.impact,0);
+  // what-if
+  const numM=ql.match(/(-?\d+(\.\d+)?)\s*%?/); const cName=DATA.countries.find(c=>ql.includes(c.toLowerCase()));
+  const SYN={chip:'Semiconductors/ICs',chips:'Semiconductors/ICs',semiconductor:'Semiconductors/ICs',display:'Display Modules',screen:'Display Modules',lcd:'Display Modules',oled:'Display Modules',battery:'Li-ion Cells & Batteries',cell:'Li-ion Cells & Batteries',capacitor:'Capacitors',connector:'Connectors',pcb:'PCB & Laminates'};
+  let cat=DATA.categories.find(c=>ql.includes(c.toLowerCase().split('/')[0].split(' ')[0]));
+  if(!cat){for(const k in SYN){if(ql.includes(k)){cat=SYN[k];break;}}}
+  const uploadRequested=ql.includes('upload')||ql.includes('excel')||ql.includes('sheet')||ql.includes('bom')||ql.includes('clean file')||ql.includes('cleaned file');
+  if((ql.includes('supplier concentration')||ql.includes('vendor concentration')||((ql.includes('supplier')||ql.includes('vendor')||ql.includes('manufacturer')) && (uploadRequested||ql.includes('sheet'))))){
+    if(!uploadMeta) return `Upload a CSV, XLS, or XLSX file first and I can show supplier concentration from the cleaned sheet.`;
+    if(!uploadInsights || !uploadInsights.topSuppliers.length) return `I cleaned the sheet, but I could not detect a supplier column automatically.`;
+    return `Supplier concentration from <b>${escapeHtml(uploadMeta.fileName)}</b>:<ul>${uploadInsights.topSuppliers.map(([name,count])=>`<li>${escapeHtml(name)} — ${count} rows</li>`).join('')}</ul>`;
+  }
+  if((ql.includes('country mix')||ql.includes('origin mix')||(((ql.includes('country')||ql.includes('origin')) && uploadRequested && !cName)))){
+    if(!uploadMeta) return `Upload a CSV, XLS, or XLSX file first and I can summarize the country mix from the cleaned sheet.`;
+    if(!uploadInsights || !uploadInsights.topCountries.length) return `I cleaned the sheet, but I could not detect a country or origin column automatically.`;
+    return `Country mix from <b>${escapeHtml(uploadMeta.fileName)}</b>:<ul>${uploadInsights.topCountries.map(([name,count])=>`<li>${escapeHtml(name)} — ${count} rows</li>`).join('')}</ul>`;
+  }
+  if((ql.includes('columns')||ql.includes('headers')||ql.includes('fields')) && (uploadRequested || ql.includes('sheet'))){
+    if(!uploadMeta) return `Upload a sheet first and I can list the detected normalized columns for you.`;
+    const headers=(uploadInsights && uploadInsights.headers || []).slice(0,10);
+    return headers.length
+      ? `Detected normalized columns in <b>${escapeHtml(uploadMeta.fileName)}</b>: <b>${headers.map(escapeHtml).join('</b>, <b>')}</b>.`
+      : `I do not have any detected columns yet. Upload a sheet and I will list them.`;
+  }
+  if(uploadRequested){
+    return uploadSummaryText();
+  }
+  if((ql.includes('what if')||ql.includes('if ')||ql.includes('raise')||ql.includes('rises')||ql.includes('tariff'))&&numM&&cName){
+    scenario={country:cName,category:cat||null,delta:parseFloat(numM[1])};
+    renderRibbon(); renderMap(); renderInsights();
+    const nv=view(), nt=nv.reduce((a,p)=>a+p.impact,0), hit=nv.filter(p=>p.country===cName&&(!cat||p.category===cat));
+    scen('on');
+    if(hit.length===0) return `There are no parts sourced from <b>${cName}</b>${cat?' in '+cat:''}, so nothing moves. Try Japan · Semiconductors.`;
+    const base=DATA.parts.reduce((a,p)=>{const s=scenario;scenario=null;const b=calc(p).impact;scenario=s;return a+b;},0);
+    return `Modeled <b>+${parseFloat(numM[1])}%</b> on ${cName}${cat?' '+cat:''}. Annual tariff cost would move from <b>${money(base)}</b> to <b>${money(nt)}</b> — a change of <b>${money(nt-base)}</b>/yr across ${hit.length} parts. The map is re-coloured to match — reset to clear.`;
+  }
+  if(ql.includes('biggest')||ql.includes('top')||ql.includes('worst')||ql.includes('most')){
+    const byC={}; v.forEach(p=>{if(p.impact>0)byC[p.country]=(byC[p.country]||0)+p.impact;});
+    const arr=Object.entries(byC).sort((a,b)=>b[1]-a[1]).slice(0,3);
+    return `Your biggest exposure is <b>${arr[0][0]}</b> at ${money(arr[0][1])}/yr.<ul>${arr.map(([c,x])=>`<li>${c} — ${money(x)}</li>`).join('')}</ul>Open ${arr[0][0]} on the map to see the parts and re-sourcing options.`;
+  }
+  if(ql.includes('single')||ql.includes('backup')||ql.includes('no source')){
+    const ss=v.filter(p=>p.single_source&&p.impact>0).sort((a,b)=>b.impact-a.impact).slice(0,5);
+    return `You have <b>${v.filter(p=>p.single_source&&p.impact>0).length}</b> single-source, tariff-hit parts — the priority to second-source:<ul>${ss.map(p=>`<li>${p.desc} (${p.country}) — ${money(p.impact)}/yr</li>`).join('')}</ul>`;
+  }
+  if(ql.includes('de-risk')||ql.includes('reduce')||ql.includes('mitigate')||ql.includes('lower')||ql.includes('fix')){
+    let target=cat; if(!target){const byCat={};v.forEach(p=>{byCat[p.category]=(byCat[p.category]||0)+p.impact;});target=Object.entries(byCat).sort((a,b)=>b[1]-a[1])[0][0];}
+    const parts=v.filter(p=>p.category===target&&p.impact>0).sort((a,b)=>b.impact-a.impact).slice(0,3);
+    return `To de-risk <b>${target}</b>:<ul>${parts.map(p=>{const alt=alternatives(p).cands[0];return `<li>${p.desc} (${p.country}) → ${alt&&alt.save>0?'re-source to '+alt.country+', save '+money(alt.save):'add second source'}</li>`;}).join('')}</ul>Open the category's country on the map to log these actions.`;
+  }
+  if(ql.includes('total')||ql.includes('cost')||ql.includes('how much')){
+    return `Total added tariff cost is <b>${money(tot)}/yr</b> across ${v.length} parts. ${v.filter(p=>p.band==='Red').length} parts are Red (act now).`;
+  }
+  if(cName){
+    const cv=v.filter(p=>p.country===cName), imp=cv.reduce((a,p)=>a+p.impact,0);
+    return imp>0? `${cName}: ${money(imp)}/yr across ${cv.filter(p=>p.impact>0).length} tariff-hit parts. Open it on the map for options.`
+      : `${cName} has no active tariff exposure right now.`;
+  }
+  return `I can help you find and fix tariff exposure. Try one of the suggestions below, or ask about a country, a category, or a "what-if" tariff.`;
+}
+function sendAsk(opts={}){
+  const q=(opts.text ?? $('#ask').value).trim();
+  if(!q) return;
+  addBubble('u',escapeHtml(q));
+  $('#ask').value='';
+  setTimeout(()=>addBubble('a',answer(q),{speak:!!opts.fromVoice}),160);
+}
+$('#send').onclick=sendAsk; $('#ask').addEventListener('keydown',e=>{if(e.key==='Enter')sendAsk();});
+function scen(on){$('#scenReset')&&$('#scenReset').remove(); if(on==='on'){/* handled by bubble */}}
+
+/* ---- tabs ---- */
+$('#tabAsst').onclick=()=>{$('#tabAsst').classList.add('on');$('#tabIns').classList.remove('on');$('#asstPane').classList.add('on');$('#insPane').style.display='none';};
+$('#tabIns').onclick=()=>{$('#tabIns').classList.add('on');$('#tabAsst').classList.remove('on');$('#asstPane').classList.remove('on');$('#insPane').style.display='block';renderInsights();};
+
+/* ---- tour ---- */
+const STEPS=[
+  {sel:'#ribbon',t:'Your headline numbers',b:'Total tariff cost on what you buy, how much spend is at risk, how many parts need a decision, and how many you\u2019ve resolved.',pos:'below'},
+  {sel:'#stage',t:'Global sourcing map',b:'A world view of every country you buy from, sized by spend and coloured by tariff exposure. Red countries are costing you money right now.',pos:'right',on:()=>backToMap()},
+  {sel:'#stage',t:'Drill into a country',b:'Tap a hot country \u2014 here\u2019s China \u2014 to see exactly which parts are tariff-hit and by how much.',pos:'right',on:()=>openCountry('China')},
+  {sel:'#cview .part',t:'Decide, don\u2019t just read',b:'Open a part and the desk ranks cheaper alternative origins with should-cost, then lets you log a sourcing action in one click.',pos:'right',on:()=>{const p=$('#cview .part');if(p)p.classList.add('open');}},
+  {sel:'#side',t:'Ask the assistant',b:'Ask in plain English \u2014 \u201cwhere\u2019s my biggest risk?\u201d or \u201cwhat if Japan chips get a 20% tariff?\u201d It answers and re-colours the map.',pos:'left',on:()=>$('#tabAsst').click()},
+  {sel:'#side',t:'Insights for your review',b:'A plain-language summary of the whole picture \u2014 ready to drop into your next category review.',pos:'left',on:()=>$('#tabIns').click()},
+];
+let ti=0;
+function backToMap(){if(selCountry){$('#cview').classList.remove('on');$('#mapView').style.display='block';$('#backBtn').style.display='none';selCountry=null;} $('#stageTitle').textContent='Global sourcing map';}
+function place(el){const r=el.getBoundingClientRect(),c=$('#tCard');c.style.display='block';const ch=c.offsetHeight,cw=c.offsetWidth;
+  let top=r.bottom+12,left=r.left; const s=STEPS[ti];
+  if(s.pos==='right'){left=r.right+14;top=Math.max(12,r.top);} if(s.pos==='left'){left=r.left-cw-14;top=Math.max(12,r.top);}
+  if(s.pos==='below'){top=r.bottom+12;left=r.left;}
+  if(left+cw>innerWidth-8)left=innerWidth-cw-8; if(left<8)left=8;
+  if(top+ch>innerHeight-8)top=Math.max(8,innerHeight-ch-8);
+  c.style.top=top+'px';c.style.left=left+'px';}
+function showStep(){$$('.t-hi').forEach(e=>e.classList.remove('t-hi'));const s=STEPS[ti];if(s.on)s.on();
+  setTimeout(()=>{const el=$(s.sel)||$('#stage');el.classList.add('t-hi');el.scrollIntoView({behavior:'smooth',block:'center'});
+    $('#tStep').textContent='Step '+(ti+1)+' of '+STEPS.length;$('#tTitle').textContent=s.t;$('#tBody').textContent=s.b;
+    $('#tDots').innerHTML=STEPS.map((_,i)=>`<i class="${i===ti?'on':''}"></i>`).join('');
+    $('#tBack2').style.visibility=ti?'visible':'hidden';$('#tNext').textContent=ti===STEPS.length-1?'Done':'Next';
+    setTimeout(()=>place(el),260);},120);}
+function startTour(){ti=0;$('#tBack').style.display='block';$('#tCard').style.display='block';showStep();}
+function endTour(){$('#tBack').style.display='none';$('#tCard').style.display='none';$$('.t-hi').forEach(e=>e.classList.remove('t-hi'));}
+$('#tourBtn').onclick=startTour;$('#tSkip').onclick=endTour;
+$('#tBack2').onclick=()=>{if(ti){ti--;showStep();}};$('#tNext').onclick=()=>{ti<STEPS.length-1?(ti++,showStep()):endTour();};
+
+/* ---- init ---- */
+loadSampleIntake();
+renderRibbon(); renderMap(); renderInsights(); renderChips(); updateVoiceReplyUI();
+$('#sheetUpload').addEventListener('change',handleUpload);
+$('#downloadCleaned').addEventListener('click',downloadCleanedCsv);
+$('#pickFileBtn').addEventListener('click',openFilePicker);
+$('#loadSampleBtn').addEventListener('click',()=>loadSampleIntake({announce:true}));
+$('#focusPreviewBtn').addEventListener('click',focusPreview);
+$$('.featurecard').forEach(card=>card.addEventListener('click',()=>handleIntakeAction(card.dataset.intakeAction)));
+bindUploadSurface();
+$('#voiceBtn').addEventListener('click',startVoiceCapture);
+$('#voiceAskBtn').addEventListener('click',startVoiceCapture);
+$('#voiceReplyBtn').addEventListener('click',toggleVoiceReply);
+$('#voiceReplyComposerBtn').addEventListener('click',toggleVoiceReply);
+addBubble('a','Hi \u2014 I\u2019m your sourcing assistant. Upload a BOM or supplier sheet in the intake panel, or ask me about tariff exposure. You can type or speak, and spoken questions get spoken answers back.');
+</script>
+</body>
+</html>

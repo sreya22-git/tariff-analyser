@@ -1,0 +1,151 @@
+part_id,part_description,category,hs_code,supplier_id,supplier_name,tier,country_of_origin,region,annual_volume_units,unit_cost_usd,material_share_pct,criticality,single_source_flag,on_time_delivery_pct,annual_spend_usd
+P0001,Metal-core PCB,PCB & Laminates,8534.00,S046,Kanto Assemblies,1,Mexico,North America,634346,8.157,0.37,High,False,87.7,5174360.32
+P0002,21700 Li-ion cell,Li-ion Cells & Batteries,8507.60,S014,Lumen Industries,1,China,East Asia,129932,6.189,0.72,Low,False,94.2,804149.15
+P0003,6-layer FR4 PCB,PCB & Laminates,8534.00,S040,Vireo Systems,1,Malaysia,SE Asia,768995,3.12,0.72,Low,True,87.1,2399264.4
+P0004,Extruded heatsink,Aluminium Enclosures,7616.99,S013,Halcyon Technologies,1,Malaysia,SE Asia,479846,8.22,0.66,High,False,94.2,3944334.12
+P0005,Board-to-board connector,Connectors,8536.90,S003,Verda Components,1,Mexico,North America,562351,1.141,0.79,Medium,False,92.2,641642.49
+P0006,Board-to-board connector,Connectors,8536.69,S044,Sable Systems,1,Taiwan,East Asia,697822,0.665,0.84,High,True,95.0,464051.63
+P0007,5.5in TFT-LCD module,Display Modules,9013.80,S029,Orin Industries,1,Thailand,SE Asia,243943,27.248,0.64,Medium,False,99.5,6646958.86
+P0008,Silicone keypad,Polymer Housings,3926.90,S009,Miran Circuit Works,1,Taiwan,East Asia,496308,3.677,0.64,High,True,90.7,1824924.52
+P0009,USB-C receptacle,Connectors,8536.69,S044,Sable Systems,1,Taiwan,East Asia,591325,1.571,0.42,High,True,95.0,928971.58
+P0010,e-Paper module,Display Modules,9013.80,S030,Trigon Fabrication,2,Vietnam,SE Asia,375550,58.355,0.41,Medium,False,86.6,21915220.25
+P0011,Coin cell CR2032,Li-ion Cells & Batteries,8507.60,S008,Hanwa Industries,1,Thailand,SE Asia,264706,11.133,0.56,Medium,False,97.0,2946971.9
+P0012,RF coax connector,Connectors,8536.69,S038,Ferro Circuit Works,2,India,South Asia,155030,1.053,0.46,Medium,False,95.2,163246.59
+P0013,8-layer backplane,PCB & Laminates,8534.00,S036,Ceyl Technologies,1,South Korea,East Asia,830002,2.402,0.56,Low,False,91.8,1993664.8
+P0014,5.5in TFT-LCD module,Display Modules,9013.80,S029,Orin Industries,1,Thailand,SE Asia,103813,38.246,0.63,Medium,False,99.5,3970432.0
+P0015,FFC/FPC connector,Connectors,8536.90,S044,Sable Systems,1,Taiwan,East Asia,590194,0.987,0.51,High,True,95.0,582521.48
+P0016,HDI rigid-flex PCB,PCB & Laminates,8534.00,S046,Kanto Assemblies,1,Mexico,North America,503247,2.373,0.66,High,False,87.7,1194205.13
+P0017,PBT connector housing,Polymer Housings,3926.90,S023,Cobalt Circuit Works,2,USA,North America,471210,3.89,0.79,Low,True,91.1,1833006.9
+P0018,DC-DC converter IC,Semiconductors/ICs,8542.39,S050,Volt Semicon,3,Japan,East Asia,256512,8.724,0.51,High,False,86.6,2237810.69
+P0019,Steel standoff set,Steel Hardware,7326.90,S048,Lumen Components,1,China,East Asia,784298,0.976,0.38,High,False,86.7,765474.85
+P0020,Film capacitor 1uF,Capacitors,8532.21,S019,Sable Devices,1,China,East Asia,1884204,0.051,0.51,Low,True,90.5,96094.4
+P0021,PBT connector housing,Polymer Housings,3926.90,S045,Kori Technologies,3,Japan,East Asia,32920,0.702,0.78,Medium,False,99.5,23109.84
+P0022,MLCC array 0402,Capacitors,8532.21,S024,Halcyon Components,1,Taiwan,East Asia,3649440,0.042,0.53,Low,False,92.2,153276.48
+P0023,32-bit MCU,Semiconductors/ICs,8542.31,S050,Volt Semicon,3,Japan,East Asia,896008,11.807,0.51,High,False,86.6,10579166.46
+P0024,5.5in TFT-LCD module,Display Modules,9013.80,S043,Hanwa Microelectronics,2,China,East Asia,640757,18.961,0.67,Low,False,98.3,12149393.48
+P0025,e-Paper module,Display Modules,9013.80,S001,Nexa Technologies,1,Taiwan,East Asia,203970,26.137,0.43,High,False,90.6,5331163.89
+P0026,Spring steel clip,Steel Hardware,7326.90,S011,Doran Precision,2,China,East Asia,755947,1.581,0.63,Medium,False,92.5,1195152.21
+P0027,EMI gasket frame,Steel Hardware,7326.90,S048,Lumen Components,1,China,East Asia,891483,0.636,0.57,High,False,86.7,566983.19
+P0028,PC/ABS bezel,Polymer Housings,3926.90,S025,Orin Microelectronics,2,Vietnam,SE Asia,90443,2.029,0.57,Medium,False,88.6,183508.85
+P0029,LCD backlight unit,Display Modules,9013.80,S029,Orin Industries,1,Thailand,SE Asia,152592,13.742,0.8,Medium,False,99.5,2096919.26
+P0030,USB-C receptacle,Connectors,8536.90,S003,Verda Components,1,Mexico,North America,191060,1.238,0.64,Medium,False,92.2,236532.28
+P0031,Touch panel assembly,Display Modules,9013.80,S030,Trigon Fabrication,2,Vietnam,SE Asia,256607,14.846,0.77,Medium,False,86.6,3809587.52
+P0032,PC/ABS bezel,Polymer Housings,3926.90,S041,Lumen Technologies,1,Thailand,SE Asia,377990,1.737,0.73,Medium,True,94.6,656568.63
+P0033,e-Paper module,Display Modules,9013.80,S004,Vireo Assemblies,1,China,East Asia,674427,13.287,0.52,Medium,False,91.0,8961111.55
+P0034,Spring steel clip,Steel Hardware,7326.90,S048,Lumen Components,1,China,East Asia,487586,0.925,0.78,High,False,86.7,451017.05
+P0035,e-Paper module,Display Modules,9013.80,S030,Trigon Fabrication,2,Vietnam,SE Asia,288382,18.869,0.78,Medium,False,86.6,5441479.96
+P0036,Spring steel clip,Steel Hardware,7326.90,S022,Meishan Circuit Works,2,South Korea,East Asia,39305,0.449,0.81,Low,False,98.5,17647.94
+P0037,HDI rigid-flex PCB,PCB & Laminates,8534.00,S040,Vireo Systems,1,Malaysia,SE Asia,27521,2.864,0.45,Low,True,87.1,78820.14
+P0038,OLED display 1.3in,Display Modules,9013.80,S002,Ceyl Industries,1,Taiwan,East Asia,627903,15.872,0.5,Medium,False,95.3,9966076.42
+P0039,FFC/FPC connector,Connectors,8536.69,S038,Ferro Circuit Works,2,India,South Asia,26436,1.026,0.7,Medium,False,95.2,27123.34
+P0040,Ceramic substrate,PCB & Laminates,8534.00,S040,Vireo Systems,1,Malaysia,SE Asia,883989,8.192,0.59,Low,True,87.1,7241637.89
+P0041,Ceramic substrate,PCB & Laminates,8534.00,S046,Kanto Assemblies,1,Mexico,North America,814928,1.259,0.83,High,False,87.7,1025994.35
+P0042,8-layer backplane,PCB & Laminates,8534.00,S046,Kanto Assemblies,1,Mexico,North America,782785,6.003,0.72,High,False,87.7,4699058.36
+P0043,Silicone keypad,Polymer Housings,3926.90,S028,Ostro Components,1,Japan,East Asia,506731,2.137,0.83,Low,False,90.0,1082884.15
+P0044,RF transceiver,Semiconductors/ICs,8542.31,S050,Volt Semicon,3,Japan,East Asia,873911,23.616,0.52,High,False,86.6,20638282.18
+P0045,Prismatic cell 50Ah,Li-ion Cells & Batteries,8507.60,S008,Hanwa Industries,1,Thailand,SE Asia,467198,3.426,0.59,Medium,False,97.0,1600620.35
+P0046,Signal amplifier IC,Semiconductors/ICs,8542.39,S050,Volt Semicon,3,Japan,East Asia,429176,3.911,0.56,High,False,86.6,1678507.34
+P0047,Ceramic substrate,PCB & Laminates,8534.00,S046,Kanto Assemblies,1,Mexico,North America,94640,3.069,0.75,High,False,87.7,290450.16
+P0048,Signal amplifier IC,Semiconductors/ICs,8542.32,S050,Volt Semicon,3,Japan,East Asia,68447,11.886,0.37,High,False,86.6,813561.04
+P0049,LiPo pouch cell 3000mAh,Li-ion Cells & Batteries,8507.60,S008,Hanwa Industries,1,Thailand,SE Asia,691168,7.311,0.74,Medium,False,97.0,5053129.25
+P0050,FPGA module,Semiconductors/ICs,8542.39,S050,Volt Semicon,3,Japan,East Asia,670699,13.575,0.37,High,False,86.6,9104738.92
+P0051,Aluminium electrolytic 470uF,Capacitors,8532.24,S016,Ferro Industries,1,USA,North America,2463000,0.048,0.61,Medium,False,91.9,118224.0
+P0052,5.5in TFT-LCD module,Display Modules,9013.80,S042,Kanto Precision,1,South Korea,East Asia,688489,27.844,0.8,Low,False,82.7,19170287.72
+P0053,Touch panel assembly,Display Modules,9013.80,S042,Kanto Precision,1,South Korea,East Asia,385201,13.076,0.52,Low,False,82.7,5036888.28
+P0054,MLCC 1206 X7R,Capacitors,8532.21,S049,Doran Fabrication,1,China,East Asia,1698420,0.023,0.55,Low,True,91.0,39063.66
+P0055,MLCC 1206 X7R,Capacitors,8532.21,S019,Sable Devices,1,China,East Asia,3706824,0.034,0.52,Low,True,90.5,126032.02
+P0056,ABS enclosure top,Polymer Housings,3926.90,S045,Kori Technologies,3,Japan,East Asia,489551,2.695,0.5,Medium,False,99.5,1319339.94
+P0057,Coax assembly RG-174,Insulated Wire & Cable,8544.49,S026,Kori Microelectronics,2,China,East Asia,140402,1.496,0.85,Low,False,91.4,210041.39
+P0058,FFC/FPC connector,Connectors,8536.90,S044,Sable Systems,1,Taiwan,East Asia,456305,0.977,0.6,High,True,95.0,445809.98
+P0059,Coin cell CR2032,Li-ion Cells & Batteries,8507.60,S008,Hanwa Industries,1,Thailand,SE Asia,92530,14.965,0.45,Medium,False,97.0,1384711.45
+P0060,5.5in TFT-LCD module,Display Modules,9013.80,S002,Ceyl Industries,1,Taiwan,East Asia,867566,14.247,0.52,Medium,False,95.3,12360212.8
+P0061,Silicone keypad,Polymer Housings,3926.90,S027,Zhen Interconnect,1,China,East Asia,866854,0.815,0.62,Medium,False,87.6,706486.01
+P0062,Tantalum capacitor 47uF,Capacitors,8532.21,S019,Sable Devices,1,China,East Asia,4856142,0.026,0.51,Low,True,90.5,126259.69
+P0063,DC-DC converter IC,Semiconductors/ICs,8542.31,S050,Volt Semicon,3,Japan,East Asia,209752,2.635,0.68,High,False,86.6,552696.52
+P0064,Battery pack 4S,Li-ion Cells & Batteries,8507.60,S020,Sable Microelectronics,1,Taiwan,East Asia,283732,3.365,0.43,Low,False,97.7,954758.18
+P0065,32-bit MCU,Semiconductors/ICs,8542.31,S050,Volt Semicon,3,Japan,East Asia,269257,11.721,0.75,High,False,86.6,3155961.3
+P0066,Ceramic substrate,PCB & Laminates,8534.00,S046,Kanto Assemblies,1,Mexico,North America,405779,5.741,0.85,High,False,87.7,2329577.24
+P0067,OLED display 1.3in,Display Modules,9013.80,S042,Kanto Precision,1,South Korea,East Asia,736881,17.126,0.74,Low,False,82.7,12619824.01
+P0068,Ferrite bead,Resistors & Passives,8533.21,S012,Terna Systems,3,China,East Asia,2375328,0.063,0.83,Low,False,88.5,149645.66
+P0069,e-Paper module,Display Modules,9013.80,S030,Trigon Fabrication,2,Vietnam,SE Asia,142908,19.456,0.83,Medium,False,86.6,2780418.05
+P0070,21700 Li-ion cell,Li-ion Cells & Batteries,8507.60,S008,Hanwa Industries,1,Thailand,SE Asia,65098,4.396,0.38,Medium,False,97.0,286170.81
+P0071,OLED display 1.3in,Display Modules,9013.80,S029,Orin Industries,1,Thailand,SE Asia,715336,19.895,0.38,Medium,False,99.5,14231609.72
+P0072,LiPo pouch cell 3000mAh,Li-ion Cells & Batteries,8507.60,S008,Hanwa Industries,1,Thailand,SE Asia,704215,6.318,0.7,Medium,False,97.0,4449230.37
+P0073,21700 Li-ion cell,Li-ion Cells & Batteries,8507.60,S014,Lumen Industries,1,China,East Asia,451650,8.594,0.56,Low,False,94.2,3881480.1
+P0074,OLED display 1.3in,Display Modules,9013.80,S001,Nexa Technologies,1,Taiwan,East Asia,385005,31.245,0.35,High,False,90.6,12029481.22
+P0075,LCD backlight unit,Display Modules,9013.80,S030,Trigon Fabrication,2,Vietnam,SE Asia,45738,11.978,0.57,Medium,False,86.6,547849.76
+P0076,HDI rigid-flex PCB,PCB & Laminates,8534.00,S046,Kanto Assemblies,1,Mexico,North America,486167,2.519,0.51,High,False,87.7,1224654.67
+P0077,Power blade connector,Connectors,8536.69,S017,Axion Technologies,1,China,East Asia,442279,0.567,0.46,Low,False,82.3,250772.19
+P0078,MLCC 1206 X7R,Capacitors,8532.24,S021,Ostro Circuit Works,3,USA,North America,2732370,0.034,0.71,Medium,False,93.9,92900.58
+P0079,Al shield can,Aluminium Enclosures,7616.99,S010,Ceyl Materials,2,Vietnam,SE Asia,61689,5.007,0.81,Low,True,91.2,308876.82
+P0080,LCD backlight unit,Display Modules,9013.80,S001,Nexa Technologies,1,Taiwan,East Asia,185723,32.935,0.41,High,False,90.6,6116787.01
+P0081,Extruded heatsink,Aluminium Enclosures,7616.99,S039,Trigon Industries,2,South Korea,East Asia,223028,9.96,0.77,Low,True,96.9,2221358.88
+P0082,Touch panel assembly,Display Modules,9013.80,S001,Nexa Technologies,1,Taiwan,East Asia,489260,35.039,0.43,High,False,90.6,17143181.14
+P0083,Ceramic substrate,PCB & Laminates,8534.00,S046,Kanto Assemblies,1,Mexico,North America,276197,2.687,0.81,High,False,87.7,742141.34
+P0084,OLED display 1.3in,Display Modules,9013.80,S029,Orin Industries,1,Thailand,SE Asia,820300,61.278,0.53,Medium,False,99.5,50266343.4
+P0085,PBT connector housing,Polymer Housings,3926.90,S047,Elbe Industries,3,China,East Asia,502392,2.914,0.65,Medium,False,94.4,1463970.29
+P0086,Machined Al chassis,Aluminium Enclosures,7606.12,S015,Nexa Devices,1,China,East Asia,384342,7.963,0.39,Medium,False,94.8,3060515.35
+P0087,e-Paper module,Display Modules,9013.80,S002,Ceyl Industries,1,Taiwan,East Asia,324901,22.939,0.43,Medium,False,95.3,7452904.04
+P0088,PBT connector housing,Polymer Housings,3926.90,S045,Kori Technologies,3,Japan,East Asia,643120,4.51,0.51,Medium,False,99.5,2900471.2
+P0089,DC-DC converter IC,Semiconductors/ICs,8542.31,S050,Volt Semicon,3,Japan,East Asia,703245,9.557,0.7,High,False,86.6,6720912.46
+P0090,Chip resistor 0603,Resistors & Passives,8533.21,S012,Terna Systems,3,China,East Asia,2798502,0.016,0.35,Low,False,88.5,44776.03
+P0091,Touch panel assembly,Display Modules,9013.80,S002,Ceyl Industries,1,Taiwan,East Asia,893914,34.403,0.41,Medium,False,95.3,30753323.34
+P0092,Motor controller IC,Semiconductors/ICs,8542.31,S050,Volt Semicon,3,Japan,East Asia,165556,8.583,0.49,High,False,86.6,1420967.15
+P0093,FFC/FPC connector,Connectors,8536.90,S003,Verda Components,1,Mexico,North America,543219,1.162,0.68,Medium,False,92.2,631220.48
+P0094,Stainless fastener kit,Steel Hardware,7326.90,S048,Lumen Components,1,China,East Asia,35981,1.152,0.47,High,False,86.7,41450.11
+P0095,RF transceiver,Semiconductors/ICs,8542.39,S050,Volt Semicon,3,Japan,East Asia,183017,6.226,0.55,High,False,86.6,1139463.84
+P0096,Touch panel assembly,Display Modules,9013.80,S042,Kanto Precision,1,South Korea,East Asia,691535,41.876,0.73,Low,False,82.7,28958719.66
+P0097,Power management IC,Semiconductors/ICs,8542.32,S050,Volt Semicon,3,Japan,East Asia,388959,10.59,0.36,High,False,86.6,4119075.81
+P0098,HDI rigid-flex PCB,PCB & Laminates,8534.00,S046,Kanto Assemblies,1,Mexico,North America,477802,3.264,0.4,High,False,87.7,1559545.73
+P0099,Gate driver IC,Semiconductors/ICs,8542.32,S050,Volt Semicon,3,Japan,East Asia,432542,10.733,0.83,High,False,86.6,4642473.29
+P0100,Chip resistor 0603,Resistors & Passives,8533.21,S012,Terna Systems,3,China,East Asia,1173576,0.017,0.58,Low,False,88.5,19950.79
+P0101,Silicone keypad,Polymer Housings,3926.90,S045,Kori Technologies,3,Japan,East Asia,792961,1.93,0.61,Medium,False,99.5,1530414.73
+P0102,Silicone keypad,Polymer Housings,3926.90,S045,Kori Technologies,3,Japan,East Asia,663399,2.316,0.63,Medium,False,99.5,1536432.08
+P0103,Prismatic cell 50Ah,Li-ion Cells & Batteries,8507.60,S008,Hanwa Industries,1,Thailand,SE Asia,815496,4.461,0.75,Medium,False,97.0,3637927.66
+P0104,USB-C receptacle,Connectors,8536.69,S007,Hanwa Devices,1,Malaysia,SE Asia,421110,2.255,0.84,Medium,True,99.5,949603.05
+P0105,MLCC 1206 X7R,Capacitors,8532.24,S024,Halcyon Components,1,Taiwan,East Asia,3917970,0.057,0.55,Low,False,92.2,223324.29
+P0106,LiPo pouch cell 3000mAh,Li-ion Cells & Batteries,8507.60,S020,Sable Microelectronics,1,Taiwan,East Asia,555692,9.949,0.55,Low,False,97.7,5528579.71
+P0107,Power blade connector,Connectors,8536.90,S038,Ferro Circuit Works,2,India,South Asia,79560,0.705,0.54,Medium,False,95.2,56089.8
+P0108,ABS enclosure top,Polymer Housings,3926.90,S025,Orin Microelectronics,2,Vietnam,SE Asia,312388,1.913,0.69,Medium,False,88.6,597598.24
+P0109,Stainless fastener kit,Steel Hardware,7326.90,S022,Meishan Circuit Works,2,South Korea,East Asia,659987,0.977,0.4,Low,False,98.5,644807.3
+P0110,HDI rigid-flex PCB,PCB & Laminates,8534.00,S046,Kanto Assemblies,1,Mexico,North America,322559,4.38,0.45,High,False,87.7,1412808.42
+P0111,Ferrite bead,Resistors & Passives,8533.21,S012,Terna Systems,3,China,East Asia,2876220,0.022,0.48,Low,False,88.5,63276.84
+P0112,FFC/FPC connector,Connectors,8536.69,S003,Verda Components,1,Mexico,North America,235377,1.293,0.6,Medium,False,92.2,304342.46
+P0113,Prismatic cell 50Ah,Li-ion Cells & Batteries,8507.60,S008,Hanwa Industries,1,Thailand,SE Asia,139164,6.46,0.73,Medium,False,97.0,898999.44
+P0114,Signal amplifier IC,Semiconductors/ICs,8542.31,S050,Volt Semicon,3,Japan,East Asia,813444,15.258,0.84,High,False,86.6,12411528.55
+P0115,32-bit MCU,Semiconductors/ICs,8542.32,S050,Volt Semicon,3,Japan,East Asia,848326,10.976,0.63,High,False,86.6,9311226.18
+P0116,Power blade connector,Connectors,8536.69,S007,Hanwa Devices,1,Malaysia,SE Asia,764301,0.593,0.62,Medium,True,99.5,453230.49
+P0117,Stainless fastener kit,Steel Hardware,7326.90,S011,Doran Precision,2,China,East Asia,242864,0.599,0.78,Medium,False,92.5,145475.54
+P0118,8-layer backplane,PCB & Laminates,8534.00,S036,Ceyl Technologies,1,South Korea,East Asia,666913,5.336,0.54,Low,False,91.8,3558647.77
+P0119,Multi-core control cable,Insulated Wire & Cable,8544.42,S026,Kori Microelectronics,2,China,East Asia,57983,1.022,0.82,Low,False,91.4,59258.63
+P0120,LiPo pouch cell 3000mAh,Li-ion Cells & Batteries,8507.60,S008,Hanwa Industries,1,Thailand,SE Asia,659527,5.807,0.48,Medium,False,97.0,3829873.29
+P0121,Aluminium electrolytic 470uF,Capacitors,8532.24,S049,Doran Fabrication,1,China,East Asia,1067718,0.073,0.57,Low,True,91.0,77943.41
+P0122,RF coax connector,Connectors,8536.90,S017,Axion Technologies,1,China,East Asia,525390,1.605,0.52,Low,False,82.3,843250.95
+P0123,RF coax connector,Connectors,8536.90,S032,Kestrel Semicon,1,China,East Asia,238597,0.351,0.43,High,True,91.2,83747.55
+P0124,Motor controller IC,Semiconductors/ICs,8542.31,S050,Volt Semicon,3,Japan,East Asia,308995,7.139,0.6,High,False,86.6,2205915.31
+P0125,USB-C receptacle,Connectors,8536.90,S032,Kestrel Semicon,1,China,East Asia,492179,0.801,0.42,High,True,91.2,394235.38
+P0126,21700 Li-ion cell,Li-ion Cells & Batteries,8507.60,S008,Hanwa Industries,1,Thailand,SE Asia,857979,11.64,0.83,Medium,False,97.0,9986875.56
+P0127,Stamped steel bracket,Steel Hardware,7326.90,S011,Doran Precision,2,China,East Asia,507886,0.394,0.48,Medium,False,92.5,200107.08
+P0128,OLED display 1.3in,Display Modules,9013.80,S002,Ceyl Industries,1,Taiwan,East Asia,124678,24.455,0.51,Medium,False,95.3,3049000.49
+P0129,FFC/FPC connector,Connectors,8536.69,S038,Ferro Circuit Works,2,India,South Asia,485195,1.04,0.44,Medium,False,95.2,504602.8
+P0130,Power management IC,Semiconductors/ICs,8542.32,S050,Volt Semicon,3,Japan,East Asia,740110,1.533,0.58,High,False,86.6,1134588.63
+P0131,Al front bezel,Aluminium Enclosures,7606.12,S010,Ceyl Materials,2,Vietnam,SE Asia,512052,3.076,0.52,Low,True,91.2,1575071.95
+P0132,6-layer FR4 PCB,PCB & Laminates,8534.00,S046,Kanto Assemblies,1,Mexico,North America,67605,12.891,0.75,High,False,87.7,871496.06
+P0133,Prismatic cell 50Ah,Li-ion Cells & Batteries,8507.60,S014,Lumen Industries,1,China,East Asia,487303,6.94,0.67,Low,False,94.2,3381882.82
+P0134,Touch panel assembly,Display Modules,9013.80,S001,Nexa Technologies,1,Taiwan,East Asia,266963,11.119,0.38,High,False,90.6,2968361.6
+P0135,OLED display 1.3in,Display Modules,9013.80,S029,Orin Industries,1,Thailand,SE Asia,401971,22.384,0.67,Medium,False,99.5,8997718.86
+P0136,ABS enclosure top,Polymer Housings,3926.90,S025,Orin Microelectronics,2,Vietnam,SE Asia,589942,2.586,0.71,Medium,False,88.6,1525590.01
+P0137,OLED display 1.3in,Display Modules,9013.80,S029,Orin Industries,1,Thailand,SE Asia,599244,17.901,0.59,Medium,False,99.5,10727066.84
+P0138,DC-DC converter IC,Semiconductors/ICs,8542.32,S050,Volt Semicon,3,Japan,East Asia,321588,10.655,0.69,High,False,86.6,3426520.14
+P0139,MLCC array 0402,Capacitors,8532.21,S049,Doran Fabrication,1,China,East Asia,1649418,0.03,0.72,Low,True,91.0,49482.54
+P0140,Gate driver IC,Semiconductors/ICs,8542.39,S050,Volt Semicon,3,Japan,East Asia,487644,7.463,0.5,High,False,86.6,3639287.17
+P0141,RF transceiver,Semiconductors/ICs,8542.39,S050,Volt Semicon,3,Japan,East Asia,366915,18.333,0.63,High,False,86.6,6726652.69
+P0142,Nylon cable gland,Polymer Housings,3926.90,S045,Kori Technologies,3,Japan,East Asia,658091,2.019,0.56,Medium,False,99.5,1328685.73
+P0143,PBT connector housing,Polymer Housings,3926.90,S041,Lumen Technologies,1,Thailand,SE Asia,632940,1.319,0.57,Medium,True,94.6,834847.86
+P0144,Battery pack 4S,Li-ion Cells & Batteries,8507.60,S008,Hanwa Industries,1,Thailand,SE Asia,305893,7.705,0.68,Medium,False,97.0,2356905.56
+P0145,e-Paper module,Display Modules,9013.80,S042,Kanto Precision,1,South Korea,East Asia,800869,26.588,0.45,Low,False,82.7,21293504.97
+P0146,HDI rigid-flex PCB,PCB & Laminates,8534.00,S046,Kanto Assemblies,1,Mexico,North America,681096,1.836,0.68,High,False,87.7,1250492.26
+P0147,LiPo pouch cell 3000mAh,Li-ion Cells & Batteries,8507.60,S008,Hanwa Industries,1,Thailand,SE Asia,693985,5.668,0.49,Medium,False,97.0,3933506.98
+P0148,5.5in TFT-LCD module,Display Modules,9013.80,S042,Kanto Precision,1,South Korea,East Asia,672564,25.766,0.62,Low,False,82.7,17329284.02
+P0149,RF coax connector,Connectors,8536.69,S044,Sable Systems,1,Taiwan,East Asia,858571,0.303,0.48,High,True,95.0,260147.01
+P0150,6-layer FR4 PCB,PCB & Laminates,8534.00,S040,Vireo Systems,1,Malaysia,SE Asia,302032,7.606,0.55,Low,True,87.1,2297255.39

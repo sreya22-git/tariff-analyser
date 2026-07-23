@@ -1,0 +1,51 @@
+supplier_id,supplier_name,country_of_origin,region,tier,category,annual_spend_usd,criticality,single_source_flag,avg_lead_time_days,on_time_delivery_pct
+S001,Nexa Technologies,Taiwan,East Asia,1,Display Modules,292000.0,High,False,40,90.6
+S002,Ceyl Industries,Taiwan,East Asia,1,Display Modules,998000.0,Medium,False,32,95.3
+S003,Verda Components,Mexico,North America,1,Connectors,1183000.0,Medium,False,17,92.2
+S004,Vireo Assemblies,China,East Asia,1,Display Modules,227000.0,Medium,False,37,91.0
+S005,Nexa Precision,China,East Asia,2,Display Modules,321000.0,High,False,54,93.7
+S006,Kori Precision,Taiwan,East Asia,2,Aluminium Enclosures,292000.0,Medium,True,47,96.4
+S007,Hanwa Devices,Malaysia,SE Asia,1,Connectors,295000.0,Medium,True,32,99.5
+S008,Hanwa Industries,Thailand,SE Asia,1,Li-ion Cells & Batteries,2578000.0,Medium,False,40,97.0
+S009,Miran Circuit Works,Taiwan,East Asia,1,Polymer Housings,328000.0,High,True,57,90.7
+S010,Ceyl Materials,Vietnam,SE Asia,2,Aluminium Enclosures,298000.0,Low,True,39,91.2
+S011,Doran Precision,China,East Asia,2,Steel Hardware,232000.0,Medium,False,39,92.5
+S012,Terna Systems,China,East Asia,3,Resistors & Passives,453000.0,Low,False,39,88.5
+S013,Halcyon Technologies,Malaysia,SE Asia,1,Aluminium Enclosures,361000.0,High,False,18,94.2
+S014,Lumen Industries,China,East Asia,1,Li-ion Cells & Batteries,600000.0,Low,False,46,94.2
+S015,Nexa Devices,China,East Asia,1,Aluminium Enclosures,161000.0,Medium,False,69,94.8
+S016,Ferro Industries,USA,North America,1,Capacitors,342000.0,Medium,False,7,91.9
+S017,Axion Technologies,China,East Asia,1,Connectors,296000.0,Low,False,50,82.3
+S018,Axion Materials,Taiwan,East Asia,1,Li-ion Cells & Batteries,136000.0,Low,False,29,92.2
+S019,Sable Devices,China,East Asia,1,Capacitors,3348000.0,Low,True,27,90.5
+S020,Sable Microelectronics,Taiwan,East Asia,1,Li-ion Cells & Batteries,2171000.0,Low,False,52,97.7
+S021,Ostro Circuit Works,USA,North America,3,Capacitors,231000.0,Medium,False,49,93.9
+S022,Meishan Circuit Works,South Korea,East Asia,2,Steel Hardware,1001000.0,Low,False,52,98.5
+S023,Cobalt Circuit Works,USA,North America,2,Polymer Housings,202000.0,Low,True,47,91.1
+S024,Halcyon Components,Taiwan,East Asia,1,Capacitors,408000.0,Low,False,51,92.2
+S025,Orin Microelectronics,Vietnam,SE Asia,2,Polymer Housings,600000.0,Medium,False,40,88.6
+S026,Kori Microelectronics,China,East Asia,2,Insulated Wire & Cable,328000.0,Low,False,62,91.4
+S027,Zhen Interconnect,China,East Asia,1,Polymer Housings,140000.0,Medium,False,47,87.6
+S028,Ostro Components,Japan,East Asia,1,Polymer Housings,1424000.0,Low,False,51,90.0
+S029,Orin Industries,Thailand,SE Asia,1,Display Modules,2282000.0,Medium,False,37,99.5
+S030,Trigon Fabrication,Vietnam,SE Asia,2,Display Modules,2650000.0,Medium,False,28,86.6
+S031,Kanto Microelectronics,China,East Asia,1,Display Modules,161000.0,Low,False,58,91.8
+S032,Kestrel Semicon,China,East Asia,1,Connectors,457000.0,High,True,37,91.2
+S033,Terna Devices,Taiwan,East Asia,1,Aluminium Enclosures,227000.0,Low,False,44,94.6
+S034,Zhen Systems,Taiwan,East Asia,1,Li-ion Cells & Batteries,144000.0,Medium,False,65,87.4
+S035,Ferro Fabrication,China,East Asia,2,Steel Hardware,999000.0,Low,False,46,94.3
+S036,Ceyl Technologies,South Korea,East Asia,1,PCB & Laminates,219000.0,Low,False,48,91.8
+S037,Sil Microelectronics,South Korea,East Asia,2,PCB & Laminates,186000.0,Medium,False,45,91.4
+S038,Ferro Circuit Works,India,South Asia,2,Connectors,380000.0,Medium,False,73,95.2
+S039,Trigon Industries,South Korea,East Asia,2,Aluminium Enclosures,422000.0,Low,True,42,96.9
+S040,Vireo Systems,Malaysia,SE Asia,1,PCB & Laminates,170000.0,Low,True,37,87.1
+S041,Lumen Technologies,Thailand,SE Asia,1,Polymer Housings,649000.0,Medium,True,64,94.6
+S042,Kanto Precision,South Korea,East Asia,1,Display Modules,2538000.0,Low,False,36,82.7
+S043,Hanwa Microelectronics,China,East Asia,2,Display Modules,258000.0,Low,False,49,98.3
+S044,Sable Systems,Taiwan,East Asia,1,Connectors,583000.0,High,True,29,95.0
+S045,Kori Technologies,Japan,East Asia,3,Polymer Housings,2708000.0,Medium,False,59,99.5
+S046,Kanto Assemblies,Mexico,North America,1,PCB & Laminates,7207000.0,High,False,25,87.7
+S047,Elbe Industries,China,East Asia,3,Polymer Housings,329000.0,Medium,False,23,94.4
+S048,Lumen Components,China,East Asia,1,Steel Hardware,1405000.0,High,False,48,86.7
+S049,Doran Fabrication,China,East Asia,1,Capacitors,517000.0,Low,True,54,91.0
+S050,Volt Semicon,Japan,East Asia,3,Semiconductors/ICs,41755000.0,High,False,57,86.6

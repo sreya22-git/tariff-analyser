@@ -1,208 +1,68 @@
 {% extends "layout.html" %}{% block content %}<div class="container-fluid py-2">
-    <div class="module-header text-center p-3 mb-4 shadow-sm bg-light border rounded">
-        <h2 class="m-0 fw-semibold">Tariff Impact Dashboard</h2>
-        <p class="text-muted mb-0 mt-1">Procurement cost impact, supplier/country risk exposure, and duty optimization opportunities.</p>
-    </div>
 
-    <div id="summary-row-loading" class="text-center my-2">
-        <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
-        <div class="mt-1 text-muted">Loading summary...</div>
-    </div>
-    <div class="row g-4 row-cols-1 row-cols-md-2 row-cols-lg-5 summary-cards-row" style="display:none;">
-        <div class="col">
-            <div class="card shadow-sm hover-card">
-                <div class="card-body">
-                    <h6 class="text-muted">Total Tariff Exposure</h6>
-                    <div class="display-6">$--</div>
+    <!-- What you're looking at -->
+    <div class="card shadow-sm border problem-card mb-3" id="mapExplainerCard">
+        <h5 class="text-secondary mb-2">What this map shows</h5>
+        <p class="mb-2">Every country you buy from shows up below as a dot on the map. The dot's size shows how much you spend there, and its color shows how exposed that spend is to tariffs. The dashed line points to <span style="color:#6d5bd0;font-weight:600">Your plant</span>, where the goods end up.</p>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="step-card h-100">
+                    <div class="step-num" style="background:#198754">&#10003;</div>
+                    <h6>Clear</h6>
+                    <p class="text-muted small mb-0">Low or no tariff impact detected for this country's spend right now.</p>
                 </div>
             </div>
-        </div>
-        <div class="col">
-            <div class="card shadow-sm hover-card">
-                <div class="card-body">
-                    <h6 class="text-muted">Total Spend Analyzed</h6>
-                    <div class="display-6">$--</div>
+            <div class="col-md-4">
+                <div class="step-card h-100">
+                    <div class="step-num" style="background:#fd7e14">!</div>
+                    <h6>Watch</h6>
+                    <p class="text-muted small mb-0">Some tariff cost is hitting this country's spend. Worth keeping an eye on.</p>
                 </div>
             </div>
-        </div>
-        <div class="col">
-            <div class="card shadow-sm hover-card">
-                <div class="card-body">
-                    <h6 class="text-muted">Vendors Analyzed</h6>
-                    <div class="display-6">--</div>
-                </div>
-            </div>
-        </div>
-        <div class="col">
-            <div class="card shadow-sm hover-card">
-                <div class="card-body">
-                    <h6 class="text-muted">POs Analyzed</h6>
-                    <div class="display-6">--</div>
-                </div>
-            </div>
-        </div>
-        <div class="col">
-            <div class="card shadow-sm hover-card">
-                <div class="card-body">
-                    <h6 class="text-muted">High-Risk Findings</h6>
-                    <div class="display-6">--</div>
+            <div class="col-md-4">
+                <div class="step-card h-100">
+                    <div class="step-num" style="background:#dc3545">&#33;</div>
+                    <h6>High exposure</h6>
+                    <p class="text-muted small mb-0">Heavy spend concentration or a large tariff hit. <b>Click the country</b> below to see which purchase orders are affected and cheaper places to source from.</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="glam-row-loading" class="text-center my-2">
-        <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
-        <div class="mt-1 text-muted">Loading impact metrics...</div>
-    </div>
-    <div id="glamRow" class="row g-4 row-cols-1 row-cols-md-3 row-cols-lg-3 mt-0" style="display:none;">
-        <div class="col">
-            <div class="card shadow-sm hover-card glam-card">
-                <div class="card-body text-center p-3">
-                    <div class="metric-wrap mx-auto">
-                        <h6 class="card-title text-center fw-semibold fs-5 text-muted mb-2">Cost Impact Analysis</h6>
-                    </div>
-                    <div class="score-panel metric-wrap mx-auto d-flex align-items-center justify-content-center mb-2">
-                        <div class="meter-container mx-auto" data-score="0">
-                            <svg viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M50,150 A100,100 0 0,1 250,150" fill="none" stroke="#e9ecef" stroke-width="30"></path>
-                                <path class="meter-arc" d="M50,150 A100,100 0 0,1 250,150" fill="none" stroke="#fd7e14" stroke-width="30" stroke-linecap="round"></path>
-                            </svg>
-                            <div class="meter-value">--</div>
-                            <div class="meter-max">100</div>
-                        </div>
-                    </div>
-                    <div class="text-muted small" style="font-size: 1rem;">-- checks failing</div>
-                    <div class="text-muted small" style="font-size: 1rem;">-- rows audited</div>
-                </div>
-                <div class="card-footer text-center bg-transparent border-0 pt-0">
-                    <a href="/analysisDetails" class="btn btn-cta btn-sm" style="font-size: 1rem;">View Detailed Report</a>
-                </div>
+    <!-- Global Sourcing Map -->
+    <div class="card shadow-sm" id="sourcingMapCard">
+        <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-sm btn-outline-secondary" id="backBtn" type="button" style="display:none">&larr; Map</button>
+                <h4 class="m-0" id="stageTitle">Global Sourcing Map</h4>
             </div>
-        </div>
-        <div class="col">
-            <div class="card shadow-sm hover-card glam-card">
-                <div class="card-body text-center p-3">
-                    <div class="metric-wrap mx-auto">
-                        <h6 class="card-title text-center fw-semibold fs-5 text-muted mb-2">Supplier &amp; Country Risk</h6>
-                    </div>
-                    <div class="score-panel metric-wrap mx-auto d-flex align-items-center justify-content-center mb-2">
-                        <div class="meter-container mx-auto" data-score="0">
-                            <svg viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M50,150 A100,100 0 0,1 250,150" fill="none" stroke="#e9ecef" stroke-width="30"></path>
-                                <path class="meter-arc" d="M50,150 A100,100 0 0,1 250,150" fill="none" stroke="#fd7e14" stroke-width="30" stroke-linecap="round"></path>
-                            </svg>
-                            <div class="meter-value">--</div>
-                            <div class="meter-max">100</div>
-                        </div>
-                    </div>
-                    <div class="text-muted small" style="font-size: 1rem;">-- checks failing</div>
-                    <div class="text-muted small" style="font-size: 1rem;">-- rows audited</div>
-                </div>
-                <div class="card-footer text-center bg-transparent border-0 pt-0">
-                    <a href="/analysisDetails" class="btn btn-cta btn-sm" style="font-size: 1rem;">View Detailed Report</a>
-                </div>
+            <div class="map-legend">
+                <span><i style="background:#dc3545"></i>high exposure</span>
+                <span><i style="background:#fd7e14"></i>watch</span>
+                <span><i style="background:#198754"></i>clear</span>
+                <span><i style="background:#6d5bd0"></i>your plant</span>
             </div>
-        </div>
-        <div class="col">
-            <div class="card shadow-sm hover-card glam-card">
-                <div class="card-body text-center p-3">
-                    <div class="metric-wrap mx-auto">
-                        <h6 class="card-title text-center fw-semibold fs-5 text-muted mb-2">Duty Optimization &amp; Compliance</h6>
-                    </div>
-                    <div class="score-panel metric-wrap mx-auto d-flex align-items-center justify-content-center mb-2">
-                        <div class="meter-container mx-auto" data-score="0">
-                            <svg viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M50,150 A100,100 0 0,1 250,150" fill="none" stroke="#e9ecef" stroke-width="30"></path>
-                                <path class="meter-arc" d="M50,150 A100,100 0 0,1 250,150" fill="none" stroke="#198754" stroke-width="30" stroke-linecap="round"></path>
-                            </svg>
-                            <div class="meter-value">--</div>
-                            <div class="meter-max">100</div>
-                        </div>
-                    </div>
-                    <div class="text-muted small" style="font-size: 1rem;">-- checks failing</div>
-                    <div class="text-muted small" style="font-size: 1rem;">-- rows audited</div>
-                </div>
-                <div class="card-footer text-center bg-transparent border-0 pt-0">
-                    <a href="/analysisDetails" class="btn btn-cta btn-sm" style="font-size: 1rem;">View Detailed Report</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Issue Overview (ApexCharts) -->
-    <div class="card shadow-sm mt-3">
-        <div class="card-header">
-            <h4 class="m-0">Findings Overview</h4>
         </div>
         <div class="card-body">
-            <div class="row g-4 align-items-stretch">
-                <div class="col-md-5">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-body">
-                            <h6 class="card-title text-center fw-semibold fs-5 text-muted mb-2">Findings by Category</h6>
-                            <div class="d-flex justify-content-center">
-                                <div id="issuesPieChart" style="height: 280px; width: 95%;"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-7">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-body">
-                            <h6 class="card-title text-center fw-semibold fs-5 text-muted mb-2"><span id="issuesBarTitle">Cost Impact Analysis</span></h6>
-                            <div class="d-flex justify-content-center">
-                                <div id="issuesBarChart" style="height: 280px; width: 100%;"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div id="sourcingMapLoading" class="text-center my-2">
+                <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+                <div class="mt-1 text-muted">Loading sourcing map...</div>
             </div>
-            <div class="row g-4 mt-1">
-                <div class="col-md-8">
-                    <div class="card shadow-sm">
-                        <div class="card-body">
-                            <h6 class="card-title text-center fw-semibold fs-5 text-muted mb-2">Duty Paid Over Time ($k, by risk category)</h6>
-                            <div class="d-flex justify-content-center">
-                                <div id="issuesFullTrendChart" style="height: 240px; width: 95%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card shadow-sm hover-card h-100 summary-6m-card">
-                        <div class="card-body text-center">
-                            <h6 class="text-muted">6-Month Summary</h6>
-                            <div class="display-6" id="issuesTotalLast6">--</div>
-                            <div class="text-muted small" id="issuesPeakMonth">Peak: --</div>
-                            <div class="text-muted small" id="issuesAvgPerMonth">Avg/Month: --</div>
-                            <p class="text-muted lorem mt-2" id="issuesNarrative1">Duty paid across procurement spend over the trailing 6 months, broken out by cost-impact, supplier-risk, and duty-optimization exposure.</p>
-                        </div>
-                    </div>
-                </div>
+            <div id="mapView">
+                <svg id="sourcingMap" viewBox="0 0 680 360" style="display:none"></svg>
             </div>
+            <div id="cview" style="display:none"></div>
+            <div id="sourcingMapTable" class="sourcing-map-table mt-3"></div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-    <script src='{{ url_for("static", path="js/dashboard.js") }}'></script>
+    <script src='{{ url_for("static", path="js/sourcing-map.js") }}?v={{ ASSET_VERSION }}'></script>
 
-    <!-- Category Summary -->
-    <div class="row g-4 mt-1">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header">
-                    <h4 class="m-0">Category Risk Summary</h4>
-                </div>
-                <div class="card-body">
-                    <div id="dq-row-loading" class="text-center my-2">
-                        <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
-                        <div class="mt-1 text-muted">Loading category summary...</div>
-                    </div>
-                    <div class="row g-3 dq-list" style="display:none;"></div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <script>
+        window.TOUR_STEPS = [
+            { sel: '#mapExplainerCard', title: 'Sourcing Data, explained', body: "Every country you buy from is a dot on the map below, colored by tariff risk: green is clear, orange is watch, red is high exposure.", pos: 'below' },
+            { sel: '#sourcingMapCard', title: 'Click a country to act', body: 'Click any colored country (or its row in the table) to see exactly which purchase orders are affected and cheaper countries to source from instead.', pos: 'below' },
+        ];
+    </script>
 
 </div>{% endblock content %}

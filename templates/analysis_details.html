@@ -3,41 +3,38 @@
 {% block content %}
 <div class="container-fluid py-4 fdi-page">
   <div class="module-header text-center p-3 mb-4 shadow-sm bg-light border rounded">
-    <h3 class="text-dark m-0">Analysis Details</h3>
+    <h3 class="text-dark m-0">AI Assistant</h3>
+    <p class="text-muted mb-0 mt-1">Ask plain-English questions about the procurement workbook you loaded on the Procurement Ingestion tab. The assistant answers from its actual cost, supplier, and duty findings, not generic advice.</p>
   </div>
-
-  <ul class="nav nav-tabs mb-3" id="section-tabs" role="tablist">
-    <li class="nav-item" role="presentation">
-      <button class="nav-link active" data-section="cost-impact" type="button">Cost Impact Analysis</button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" data-section="supplier-risk" type="button">Supplier &amp; Country Risk</button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" data-section="duty-optimization" type="button">Duty Optimization &amp; Compliance</button>
-    </li>
-  </ul>
 
   <div class="row g-4 mt-0">
     <div class="col-12">
       <div class="card p-3 shadow-sm">
-        <div id="section-cost-impact" class="analysis-section">
-          <div id="summary-cards-cost-impact" class="mb-3"></div>
-          <div id="buckets-container-cost-impact"><div class="text-muted">Loading...</div></div>
-        </div>
-        <div id="section-supplier-risk" class="analysis-section" style="display:none;">
-          <div id="summary-cards-supplier-risk" class="mb-3"></div>
-          <div id="buckets-container-supplier-risk"><div class="text-muted">Loading...</div></div>
-        </div>
-        <div id="section-duty-optimization" class="analysis-section" style="display:none;">
-          <div id="summary-cards-duty-optimization" class="mb-3"></div>
-          <div id="buckets-container-duty-optimization"><div class="text-muted">Loading...</div></div>
+        <div class="aiask-panel">
+          <div id="aiaskChat" class="aiask-chat">
+            <div class="aiask-empty">Ask about risk, findings, or sourcing actions for the currently loaded workbook, or try one of these:</div>
+          </div>
+          <div class="aiask-chips" id="aiaskChips">
+            <button type="button" class="aiask-chip">Where's my biggest tariff risk?</button>
+            <button type="button" class="aiask-chip">Which countries should I diversify away from?</button>
+            <button type="button" class="aiask-chip">How many findings are there?</button>
+            <button type="button" class="aiask-chip">What should I do about single-source suppliers?</button>
+          </div>
+          <div class="aiask-composer">
+            <input id="aiaskInput" class="form-control" placeholder="e.g. Where's my biggest tariff risk?" autocomplete="off">
+            <button id="aiaskSend" class="btn btn-cta" type="button">Ask</button>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<script src="{{ url_for('static', path='js/analysis-details.js') }}"></script>
-<script>document.addEventListener('DOMContentLoaded', () => window.AnalysisDetails.init());</script>
+<script src="{{ url_for('static', path='js/ai-assistant.js') }}?v={{ ASSET_VERSION }}"></script>
+<script>
+    window.TOUR_STEPS = [
+        { sel: '#aiaskChat', title: 'Ask the assistant', body: "Ask in plain English, like “where's my biggest risk?”, and get an answer grounded in this workbook's actual findings.", pos: 'below' },
+        { sel: '#aiaskChips', title: 'Not sure what to ask?', body: 'Click one of these example questions to get started.', pos: 'below' },
+    ];
+</script>
 {% endblock %}

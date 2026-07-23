@@ -63,6 +63,35 @@ class LLMService:
             except Exception as e:
                 return f"An unexpected error occurred: {e}"
 
+    async def answer_question(self, question: str, context: str) -> str:
+        return await self._answer_llm(question, context)
+
+    async def _answer_llm(self, question: str, context: str) -> str:
+        system = _load_prompt("SourcingAssistantPrompt.md")
+        if not system:
+            return "Error: SourcingAssistantPrompt.md not found or is empty."
+        async with httpx.AsyncClient(timeout=90) as client:
+            try:
+                resp = await client.post(
+                    f"{self.base_url}/chat/completions",
+                    headers={"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"},
+                    json={
+                        "model": self.model,
+                        "messages": [
+                            {"role": "system", "content": system},
+                            {"role": "user", "content": f"Findings context:\n{context}\n\nQuestion: {question}"},
+                        ],
+                        "temperature": 0.2,
+                    },
+                )
+                resp.raise_for_status()
+                data = resp.json()
+                return data.get("choices", [{}])[0].get("message", {}).get("content", "") or "I don't have an answer for that."
+            except httpx.RequestError as e:
+                return f"Error calling LLM API: {e}"
+            except Exception as e:
+                return f"An unexpected error occurred: {e}"
+
     def _summarize_stub(self, context: str) -> str:
         """Deterministic, context-grounded summary parsed from the same bracketed-bucket
         lines that would otherwise be sent to the LLM (see main._bucket_context)."""

@@ -353,6 +353,146 @@ def analyze_duty_optimization(file_path: str | Path) -> Dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------
+# Global Sourcing Map (country-level risk aggregate for the dashboard map)
+# ---------------------------------------------------------------------------
+
+def build_sourcing_map_payload(file_path: str | Path) -> Dict[str, Any]:
+    sheets = _load_sheets(file_path)
+    po = _get(sheets, "PO Master")
+    tariff = _get(sheets, "HS Code Tariff Rates")
+    inv = _get(sheets, "Spend Invoice Detail")
+
+    by_country: Dict[str, Dict[str, Any]] = {}
+    if po is None or "CountryOfOrigin" not in po.columns:
+        return {"by_country": [], "summary": {"total_spend": 0.0, "total_impact": 0.0, "countries": 0}}
+
+    grp = po.groupby("CountryOfOrigin").agg(spend=("POValue", "sum"), pos=("PONumber", "count"), vendors=("VendorID", "nunique"))
+    for country, r in grp.iterrows():
+        if not country:
+            continue
+        by_country[country] = {
+            "country": country,
+            "spend": float(_num(pd.Series([r["spend"]])).iloc[0] or 0.0),
+            "impact": 0.0,
+            "vendors": int(r["vendors"]),
+            "pos": int(r["pos"]),
+            "band": "Green",
+        }
+
+    if inv is not None and tariff is not None:
+        m = inv.merge(po[["PONumber", "CountryOfOrigin"]], on="PONumber", how="left")
+        m = m.merge(tariff[["HSCode", "CountryOfOrigin", "DutyRatePct", "PriorDutyRatePct"]], on=["HSCode", "CountryOfOrigin"], how="left")
+        m["_base_value"] = _num(m["Qty"]) * _num(m["UnitCost"])
+        m["_rate_increase"] = _num(m["DutyRatePct"]) - _num(m["PriorDutyRatePct"])
+        m["_cost_impact"] = m["_base_value"] * m["_rate_increase"].clip(lower=0) / 100.0
+        impact_by_country = m.groupby("CountryOfOrigin")["_cost_impact"].sum(numeric_only=True)
+        for country, impact in impact_by_country.items():
+            if country in by_country:
+                by_country[country]["impact"] = float(impact or 0.0)
+
+    total_spend = grp["spend"].sum() or 0.0
+    for country, c in by_country.items():
+        pct = (c["spend"] / total_spend * 100.0) if total_spend else 0.0
+        impact_pct = (c["impact"] / c["spend"] * 100.0) if c["spend"] else 0.0
+        band = "Green"
+        if pct >= 35 or impact_pct >= 10:
+            band = "Red"
+        elif c["impact"] > 0:
+            band = "Amber"
+        c["band"] = band
+        c["spend_pct"] = round(pct, 1)
+        c["impact_pct"] = round(impact_pct, 1)
+
+    by_country_list = sorted(by_country.values(), key=lambda c: c["spend"], reverse=True)
+    return {
+        "by_country": by_country_list,
+        "summary": {
+            "total_spend": float(total_spend),
+            "total_impact": float(sum(c["impact"] for c in by_country_list)),
+            "countries": len(by_country_list),
+        },
+    }
+
+
+def build_country_drilldown(file_path: str | Path, country: str) -> Dict[str, Any]:
+    """Per-invoice sourcing detail for one country of origin, with cheaper alternate-country
+    duty-rate comparisons for the same HS code. The real-data equivalent of demo.html's
+    per-part 'sourcing options' drill-in."""
+    sheets = _load_sheets(file_path)
+    po = _get(sheets, "PO Master")
+    tariff = _get(sheets, "HS Code Tariff Rates")
+    inv = _get(sheets, "Spend Invoice Detail")
+
+    empty = {"country": country, "summary": {"spend": 0.0, "impact": 0.0, "pos": 0, "vendors": 0, "single_source_count": 0}, "records": []}
+    if po is None or "CountryOfOrigin" not in po.columns:
+        return empty
+
+    country_pos = po[po["CountryOfOrigin"] == country]
+    if country_pos.empty:
+        return empty
+
+    records: List[Dict[str, Any]] = []
+    if inv is not None and tariff is not None and "ItemCategory" in country_pos.columns:
+        m = inv.merge(country_pos[["PONumber", "ItemCategory", "CountryOfOrigin"]], on="PONumber", how="inner")
+        m = m.merge(tariff[["HSCode", "CountryOfOrigin", "DutyRatePct", "PriorDutyRatePct"]], on=["HSCode", "CountryOfOrigin"], how="left")
+        m["_base_value"] = _num(m["Qty"]) * _num(m["UnitCost"])
+        m["_rate_increase"] = _num(m["DutyRatePct"]) - _num(m["PriorDutyRatePct"])
+        m["_cost_impact"] = m["_base_value"] * m["_rate_increase"].clip(lower=0) / 100.0
+
+        cat_vendor_counts = po.groupby("ItemCategory")["VendorID"].nunique() if "VendorID" in po.columns else {}
+        alt_by_hs = (
+            tariff[tariff["CountryOfOrigin"] != country]
+            .groupby(["HSCode", "CountryOfOrigin"])["DutyRatePct"].mean()
+            .reset_index()
+        )
+
+        for _, r in m.iterrows():
+            hs = r.get("HSCode")
+            cur_rate = _num(pd.Series([r.get("DutyRatePct")])).iloc[0]
+            cat = r.get("ItemCategory")
+            impact = float(r["_cost_impact"] or 0.0)
+            rate_increase = float(r["_rate_increase"]) if pd.notna(r["_rate_increase"]) else 0.0
+            band = "Red" if impact > 0 and rate_increase > 5 else ("Amber" if impact > 0 else "Green")
+            single_source = bool(cat_vendor_counts.get(cat, 0) == 1) if hasattr(cat_vendor_counts, "get") else False
+
+            alternatives: List[Dict[str, Any]] = []
+            if pd.notna(cur_rate):
+                alts_df = alt_by_hs[alt_by_hs["HSCode"] == hs].sort_values("DutyRatePct").head(3)
+                for _, a in alts_df.iterrows():
+                    saving_pct = float(cur_rate - a["DutyRatePct"])
+                    est_annual_saving = float(r["_base_value"] or 0.0) * saving_pct / 100.0
+                    alternatives.append({
+                        "country": a["CountryOfOrigin"],
+                        "duty_rate_pct": round(float(a["DutyRatePct"]), 1),
+                        "estimated_annual_saving": round(est_annual_saving, 2),
+                    })
+
+            records.append({
+                "invoice_id": str(r.get("InvoiceID")),
+                "category": cat,
+                "hs_code": hs,
+                "duty_rate_pct": None if pd.isna(cur_rate) else round(float(cur_rate), 1),
+                "impact": round(impact, 2),
+                "band": band,
+                "single_source": single_source,
+                "alternatives": alternatives,
+            })
+
+    records.sort(key=lambda r: r["impact"], reverse=True)
+    return {
+        "country": country,
+        "summary": {
+            "spend": float(_num(country_pos["POValue"]).sum() or 0.0),
+            "impact": round(float(sum(r["impact"] for r in records)), 2),
+            "pos": int(len(country_pos)),
+            "vendors": int(country_pos["VendorID"].nunique()) if "VendorID" in country_pos.columns else 0,
+            "single_source_count": sum(1 for r in records if r["single_source"]),
+        },
+        "records": records[:25],
+    }
+
+
+# ---------------------------------------------------------------------------
 # Deterministic dashboard payload (non-LLM fallback; also usable to sanity
 # check the agentic/LLM output since it shares the same JSON contract)
 # ---------------------------------------------------------------------------

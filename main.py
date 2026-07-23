@@ -7,6 +7,7 @@ from fastapi import FastAPI, Request, UploadFile, File
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel
 
 from services.llm_service import LLMService, DashboardLLM, generate_schema_overview
 from services.parser import (
@@ -16,7 +17,13 @@ from services.parser import (
     heuristic_relationships,
     enrich_relationships_llm_first,
 )
-from services.tariff_analysis import analyze_cost_impact, analyze_supplier_risk, analyze_duty_optimization
+from services.tariff_analysis import (
+    analyze_cost_impact,
+    analyze_supplier_risk,
+    analyze_duty_optimization,
+    build_sourcing_map_payload,
+    build_country_drilldown,
+)
 
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(dotenv_path=BASE_DIR / ".env")
@@ -28,7 +35,7 @@ DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
 DEMO_FILE = DATA_DIR / "procurement_demo.xlsx"
 
-app = FastAPI(title="Tariff Impact Analyzer — Procurement")
+app = FastAPI(title="Tariff Impact Analyzer for Procurement")
 
 static_dir = BASE_DIR / "static"
 if static_dir.exists():
@@ -36,6 +43,21 @@ if static_dir.exists():
 app.mount("/demo-data", StaticFiles(directory=str(DATA_DIR)), name="demo_data")
 
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
+
+
+def _compute_asset_version() -> str:
+    """Cache-busting token for <script>/<link> tags. Uses the max mtime across static/ so
+    browsers/proxies fetch fresh JS/CSS the moment a file actually changes, not just on restart."""
+    if not static_dir.exists():
+        return "0"
+    try:
+        return str(int(max((p.stat().st_mtime for p in static_dir.rglob("*") if p.is_file()), default=0)))
+    except Exception:
+        return "0"
+
+
+ASSET_VERSION = _compute_asset_version()
+templates.env.globals["ASSET_VERSION"] = ASSET_VERSION
 
 
 def _resolve_data_path(file: str | None) -> Path:
@@ -145,6 +167,40 @@ async def duty_optimization_report(file: str | None = None):
     return JSONResponse(content=report)
 
 
+@app.get("/api/sourcing-map-report", response_class=JSONResponse)
+async def sourcing_map_report(file: str | None = None):
+    data_path = _resolve_data_path(file)
+    return JSONResponse(content=build_sourcing_map_payload(data_path))
+
+
+@app.get("/api/country-drilldown", response_class=JSONResponse)
+async def country_drilldown(country: str, file: str | None = None):
+    data_path = _resolve_data_path(file)
+    return JSONResponse(content=build_country_drilldown(data_path, country))
+
+
+# --- AI assistant Q&A ---------------------------------------------------
+
+class AskRequest(BaseModel):
+    question: str
+    file: str | None = None
+
+
+@app.post("/api/ask", response_class=JSONResponse)
+async def ask_assistant(body: AskRequest):
+    data_path = _resolve_data_path(body.file)
+    context_parts = []
+    for report_fn in (analyze_cost_impact, analyze_supplier_risk, analyze_duty_optimization):
+        try:
+            context_parts.append(_bucket_context(report_fn(data_path)))
+        except Exception:
+            continue
+    context = "\n".join(p for p in context_parts if p)
+    llm = LLMService(model=OPENAI_MODEL, api_key=OPENAI_API_KEY, base_url=OPENAI_BASE_URL)
+    answer = await llm.answer_question(body.question, context)
+    return JSONResponse(content={"answer": answer})
+
+
 def _bucket_context(report: Dict) -> str:
     lines = []
     for bucket, items in (report.get("issues_by_bucket") or {}).items():
@@ -156,4 +212,4 @@ def _bucket_context(report: Dict) -> str:
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("main:app", host="127.0.0.1", port=8003, reload=True)
+    uvicorn.run("main:app", host=os.getenv("HOST", "127.0.0.1"), port=int(os.getenv("PORT", "8003")), reload=True)
